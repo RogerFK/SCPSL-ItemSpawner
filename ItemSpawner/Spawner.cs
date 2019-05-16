@@ -40,7 +40,7 @@ namespace RogerFKspawner
 		{
 			return ZriToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation)));
 		}
-		public static void AddItemToRoomPos(Room room, ItemType item, Vector vector, Vector rotation = null)
+		public static void AddItem(Room room, ItemType item, Vector vector, Vector rotation = null)
 		{
 			if (rotation == null)
 			{
@@ -52,12 +52,13 @@ namespace RogerFKspawner
 				ploogin.Info("You gave one null vector, somewhere");
 				return;
 			}
+			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in vectorial calculus */
 			PluginManager.Manager.Server.Map.SpawnItem(item, ZriToVector((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector))),
 			ZriToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation))));
 			ploogin.Info("Spawneado " + item.ToString() + " en: " + room.RoomType.ToString());
 		}
 
-		public static void AñadeItemPosRT(RoomType room, ItemType item, Vector vector, Vector rotation = null)
+		public static void AddItem(RoomType room, ItemType item, Vector vector, Vector rotation = null)
 		{
 			if (rotation == null)
 			{
@@ -94,33 +95,31 @@ namespace RogerFKspawner
 
 		public string GetCommandDescription()
 		{
-			return "pa sacar la posicion en base a esa sala lol";
+			return "Gives you the position of coins so you can place it inside items.txt";
 		}
 
 		public string GetUsage()
 		{
-			return "COINFECTHER <la sala>";
+			return "COINFECTHER <RoomType>";
 		}
 
 		public string[] OnCall(ICommandSender sender, string[] args)
 		{
 			if (args.Length == 0)
 			{
-				string retValue = "Lista:\n";
+				string retValue = "List:\n";
 				foreach (RoomType room in Enum.GetValues(typeof(RoomType)))
 				{
 					retValue += room.ToString() + "\n";
 				}
-				retValue += "Uso: COINFECTHER <la sala>";
+				retValue += "Use: COINFECTHER <RoomType>";
 				return new string[] { retValue };
 			}
 			if(sender is Player p)
 			{
 				if(p.GetUserGroup().Name != "owner" || p.GetUserGroup().Name != "admin")
 				{
-					return new string[] { "Para prevenir problemas de lag, no puedes usar este comando a no ser que seas admin.",
-						"Puedes pedirle el plugin a Inset o a RogerFK para hacerlo en un servidor privado.",
-						"Si tienes dudas, ya sabes."};
+					return new string[] { "You don't have permissions to use this command. Download the plugin yourself and do it on your own machine."};
 				}
 			}
 			string returnValueLocal = "Posiciones locales inversas:";
@@ -132,16 +131,17 @@ namespace RogerFKspawner
 					foreach (Smod2.API.Item item in PluginManager.Manager.Server.Map.GetItems(ItemType.COIN, true))
 					{
 						Vector3 aux3 = (r.GetGameObject() as GameObject).transform.InverseTransformPoint(VectorTo3(item.GetPosition()));
+						returnValueLocal += args[1] + ":COIN:";
 						returnValueLocal += aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 						',' + aux3.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-						',' + aux3.z.ToString(System.Globalization.CultureInfo.InvariantCulture) + '\n';
+						',' + aux3.z.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":0,0,0\n";
 					}
 					if (sender is Server)
 					{
 						foreach (Player rata in PluginManager.Manager.Server.GetPlayers())
 						{
 							Vector3 aux3 = (r.GetGameObject() as GameObject).transform.InverseTransformPoint(VectorTo3(rata.GetPosition()));
-							returnValueLocal += "Posición de " + rata.Name + ": " + aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+							returnValueLocal += rata.Name + "'s position: " + aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 							',' + aux3.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 							',' + aux3.z.ToString(System.Globalization.CultureInfo.InvariantCulture) + '\n';
 						}
@@ -149,7 +149,7 @@ namespace RogerFKspawner
 					else if (sender is Player puta)
 					{
 						Vector3 aux3 = (r.GetGameObject() as GameObject).transform.InverseTransformPoint(VectorTo3(puta.GetPosition()));
-						returnValueLocal += "Tu posición: " + aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+						returnValueLocal += "Your position: " + aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 						',' + aux3.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 						',' + aux3.z.ToString(System.Globalization.CultureInfo.InvariantCulture) + '\n';
 					}
@@ -164,7 +164,7 @@ namespace RogerFKspawner
 					foreach (Player rata in PluginManager.Manager.Server.GetPlayers())
 					{
 						Vector3 aux3 = (r.GetGameObject() as GameObject).transform.InverseTransformPoint(VectorTo3(rata.GetPosition()));
-						returnValueLocal += "Posición de " + rata.Name + " a " + r.RoomType.ToString() + ": " + aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+						returnValueLocal += rata.Name + "'s pos to " + r.RoomType.ToString() + ": " + aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 						',' + aux3.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 						',' + aux3.z.ToString(System.Globalization.CultureInfo.InvariantCulture) + '\n';
 					}
@@ -172,7 +172,7 @@ namespace RogerFKspawner
 				if (sender is Player tomto)
 				{
 					Vector3 aux3 = (r.GetGameObject() as GameObject).transform.InverseTransformPoint(VectorTo3(tomto.GetPosition()));
-					returnValueLocal += "Tu posición: " + "" + aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+					returnValueLocal += "Your pos to: "+ r.RoomType.ToString() + aux3.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 					", " + aux3.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
 					", " + aux3.z.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\n";
 				}

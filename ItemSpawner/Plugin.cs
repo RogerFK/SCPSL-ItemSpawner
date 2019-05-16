@@ -153,7 +153,7 @@ namespace RogerFKspawner
 					{
 						if (rand.Next(0, 10000) <= spawn.probability * 100)
 						{
-							Spawner.AddItemToRoomPos(room, spawn.itemType[rand.Next(0, spawn.itemType.Length - 1)], spawn.position, spawn.rotation);
+							Spawner.AddItem(room, spawn.itemType[rand.Next(0, spawn.itemType.Length - 1)], spawn.position, spawn.rotation);
 						}
 						spawnlist.Remove(spawn); // If this ever gives an exception, I'm fucking done
 					}
