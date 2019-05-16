@@ -148,8 +148,7 @@ namespace RogerFKspawner
 			{
 				foreach (Room room in Spawner.rooms)
 				{
-					List<SpawnInfo> auxList = spawnlist.Where(x => x.RoomType == room.RoomType).ToList();
-					foreach (SpawnInfo spawn in auxList)
+					foreach (SpawnInfo spawn in spawnlist.Where(x => x.RoomType == room.RoomType))
 					{
 						if (rand.Next(0, 10000) <= spawn.probability * 100)
 						{
