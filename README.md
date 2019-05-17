@@ -11,3 +11,4 @@ Custom item spawns for everybody. Yay.
 The only command as of now is `coinfetcher` and locked to admins and owners to avoid delays caused by any other role, and shows the whole format to place in `items.txt`
 
 ## Future implementations will have commands to add new items from the in-game R.A. console.
+## I haven't really had time to add more stuff and more item spawns, because my plan is just leaving this game when SCP: Ascension comes out, so I rather spend my time doing other stuff.
