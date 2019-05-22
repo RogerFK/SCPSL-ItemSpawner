@@ -8,16 +8,21 @@ using Smod2.Commands;
 using Smod2.EventHandlers;
 using Smod2.Events;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace RogerFKspawner
 {
-	internal class Spawner : IEventHandlerWaitingForPlayers, ICommandHandler
+	internal class Spawner : IEventHandlerWaitingForPlayers, ICommandHandler, IEventHandlerCallCommand
 	{
-		private static Smod2.Plugin ploogin;
+		private static Plugin ploogin;
+
+        private List<GameObject> items = new List<GameObject>();
+
+        private SpawnInfo[] spawnInfos;
 
 		public static void Init(Smod2.Plugin plugin, Priority priority = Priority.Highest)
 		{
-			ploogin = plugin;
+			ploogin = (Plugin) plugin;
 			plugin.AddEventHandlers(new Spawner(), priority);
 		}
 
@@ -55,7 +60,7 @@ namespace RogerFKspawner
 			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in vectorial calculus */
 			PluginManager.Manager.Server.Map.SpawnItem(item, ZriToVector((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector))),
 			ZriToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation))));
-			ploogin.Info("Spawneado " + item.ToString() + " en: " + room.RoomType.ToString());
+			ploogin.Info("Spawned " + item.ToString() + " in: " + room.RoomType.ToString());
 		}
 
 		public static void AddItem(RoomType room, ItemType item, Vector vector, Vector rotation = null)
@@ -95,33 +100,45 @@ namespace RogerFKspawner
 
 		public string GetCommandDescription()
 		{
-			return "Gives you the position of coins so you can place it inside items.txt";
+			return "Commands to use the itemspawner command";
 		}
 
 		public string GetUsage()
 		{
-			return "COINFECTHER <RoomType>";
+			return "ITEMSPAWNER <HELP/ADDCOINS/DELCOINS/REMOVE/LIST/IDLIST/ROOMLIST>";
 		}
 
 		public string[] OnCall(ICommandSender sender, string[] args)
 		{
-			if (args.Length == 0)
-			{
-				string retValue = "List:\n";
-				foreach (RoomType room in Enum.GetValues(typeof(RoomType)))
-				{
-					retValue += room.ToString() + "\n";
-				}
-				retValue += "Use: COINFECTHER <RoomType>";
-				return new string[] { retValue };
-			}
-			if(sender is Player p)
-			{
-				if(p.GetUserGroup().Name != "owner" || p.GetUserGroup().Name != "admin")
-				{
-					return new string[] { "You don't have permissions to use this command. Download the plugin yourself and do it on your own machine."};
-				}
-			}
+            if (sender is Player p)
+            {
+                if (!ploogin.allowedranks.Contains(p.GetUserGroup().Name))
+                {
+                    return new string[] { "You're not allowed to run this command." };
+                } 
+            }
+            if (args.Length == 0)
+            {
+                return new string[] { "Please introduce a second argument", "<ADD/REMOVE/LIST/IDLIST/ROOMLIST>" };
+            }
+            switch (args[0].ToLower())
+            {
+                case "help":
+                    return new string[] { "ITEMSPAWNER ADDCOINS <RoomType> - Adds the coin you spawned to a list you can later modify, then removes them from the map",
+                    "ITEMSPAWNER DELCOINS - Deletes all coins you've spawned through the newpos command",
+                    "ITEMSPAWNER SPAWNLIST - Displays the current spawnlist, so you can modify it",
+                    "ITEMSPAWNER REMOVE - Removes one SpawnInfo from the list"};
+                case "roomlist":
+                    string retValue = "List:\n";
+                    foreach (RoomType room in Enum.GetValues(typeof(RoomType)))
+                    {
+                        retValue += room.ToString() + "\n";
+                    }
+                    return new string[] { retValue };
+                case "addall":
+
+                    break;
+            }
 			string returnValueLocal = "Posiciones locales inversas:";
 			returnValueLocal += "\n";
 			foreach (Room r in rooms)
@@ -180,5 +197,75 @@ namespace RogerFKspawner
 			ploogin.Info(returnValueLocal);
 			return new string[] { returnValueLocal };
 		}
-	}
+
+        public void OnCallCommand(PlayerCallCommandEvent ev)
+        {
+            if (ev.Command.StartsWith("newpos"))
+            {
+                if (!ploogin.allowedranks.Contains(ev.Player.GetUserGroup().Name))
+                {
+                    ev.ReturnMessage = "You can't use this command.";
+                    return;
+                }
+                //ploogin.Info(ev.Player.GetRotation().ToString() + "<-- if this is 0,0,0 multiple times, Smod2 is trash");
+                var aux = ((GameObject)ev.Player.GetGameObject()).GetComponent<Scp049PlayerScript>();
+                ploogin.Info(aux.plyCam.transform.forward.ToString());
+                Vector3 plyRot = aux.plyCam.transform.forward;
+                UnityEngine.Physics.Raycast(aux.plyCam.transform.position, plyRot, out RaycastHit where, 40f);
+
+                if (where.point.Equals(Vector3.zero))
+                {
+                    ev.ReturnMessage = "Failed to get the position. Try another place.";
+                }
+                else
+                {
+                    ploogin.Info(where.point + " vs  " + where.transform.position);
+
+                    Inventory component = GameObject.Find("Host").GetComponent<Inventory>();
+                    if(component != null)
+                    {
+                        GameObject auxItem = component.SetPickup((int)ItemType.COIN, -4.6566467E+11f, where.point, Quaternion.Euler(new Vector3(-plyRot.x, plyRot.y, -plyRot.z)), 0, 0, 0);
+                        items.Add(auxItem);
+                    }
+                    Room room = null;
+                    Vector3 closestVec = new Vector3(100, 40000, 100);
+                    ClosestRoom(where.point, out room, ref closestVec);
+                    ploogin.Info(room.RoomType.ToString() + " detected as the closest (" + where.point + ')');
+                    try
+                    {
+                        ev.ReturnMessage = "Added " + where.point.ToString() + " to the list. Its pos-ID is " + (items.Count - 1)
+                            + "\nTo check the vectors, type \"itemspawner list\" in the R.A. console.\nTo add them, type \"itemspawner add <pos-id> <RoomType> <your items>\""
+                            + "\nYou're probably looking for the RoomType: " + room.RoomType.ToString();
+                    }
+                    catch
+                    {
+                        ev.ReturnMessage = "Unexpected error. Try running this command again."; // not really hehhehehe make this a meme
+                    }
+                }
+            }
+        }
+        public void ClosestRoom(Vector3 yourpos, out Room room, ref Vector3 closest)
+        {
+            float closestDist = 10000f;
+            room = null;
+            foreach (Room r in rooms)
+            {
+                float curDist = Vector.Distance(ZriToVector(yourpos), r.Position);
+                if (curDist < closestDist)
+                {
+                    closestDist = curDist;
+                    closest = (r.GetGameObject() as GameObject).transform.position;
+                    room = r;
+                }
+            }
+        }
+        public void DeleteItems()
+        {
+            foreach(var aux in items)
+            {
+                NetworkServer.Destroy(aux);
+            }
+            items.Clear();
+        }
+    }
 }

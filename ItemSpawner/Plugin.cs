@@ -7,15 +7,16 @@ using Smod2.Attributes;
 using Smod2.EventHandlers;
 using Smod2.Events;
 using System.IO;
+using Smod2.Config;
 
 namespace RogerFKspawner
 {
 	[PluginDetails(
 		author = "RogerFK",
-		name = "Spawner de items",
+		name = "Item Spawner",
 		description = "who reads this lmao haha tbhfam",
 		id = "rogerfk.spawner",
-		version = "1.0",
+		version = "1.1",
 		SmodMajor = 3,
 		SmodMinor = 4,
 		SmodRevision = 0
@@ -31,12 +32,13 @@ namespace RogerFKspawner
 		{
 			this.Info("Stuff spawner enabled");
 		}
-
+        [ConfigOption]
+        public string[] allowedranks = new string[] { "owner", "admin" };
 		public override void Register()
 		{
 			this.AddEventHandlers(new SpawnParser(this), Priority.Low);
 			Spawner.Init(this);
-			AddCommand("coinfetcher", new Spawner());
+			AddCommand("itemspawner", new Spawner());
 		}
 	}
 	public class SpawnParser : IEventHandlerWaitingForPlayers
@@ -48,17 +50,17 @@ namespace RogerFKspawner
 		{
 			this.plugin = plugin;
 		}
-		private Vector VectorParser(string vectorData, int i)
+		private Vector VectorParser(string vectorData, int line)
 		{
 			string[] vector = vectorData.Split(',');
 			if (vector.Length != 3)
 			{
-				plugin.Info("Bad format for a vector (" + vectorData + ") in line " + i);
+				plugin.Info("Bad format for a vector (" + vectorData + ") in line " + line);
 				return null;
 			}
 			if (!float.TryParse(vector[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float x) || !float.TryParse(vector[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float y) || !float.TryParse(vector[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
 			{
-				plugin.Info("Error parsing vector: (" + vectorData + ") in line " + i);
+				plugin.Info("Error parsing vector: (" + vectorData + ") in line " + line);
 				return null;
 			}
 			return new Vector(x, y, z);
@@ -68,13 +70,13 @@ namespace RogerFKspawner
 			if (!FileManager.FileExists("./items.txt"))
 			{
 				plugin.Info("Created items.txt file with a microhid (or a coin) in the Intercom room and one at the Silo warhead as an example.");
-				File.WriteAllText("./", "NUKE:MICROHID:100:-0.05,402.46,3.52:1,0,0\nINTERCOM:MICROHID,COIN:100:-9.212725,-6.839905,-3.935197:0.5,0,0");
+				File.WriteAllText("./items.txt", "NUKE:MICROHID:100:-0.05,402.46,3.52:1,0,0\nINTERCOM:MICROHID,COIN:100:-9.212725,-6.839905,-3.935197:0.5,0,0");
 			}
 			List<SpawnInfo> spawnlist = new List<SpawnInfo>();
-			string[] items = FileManager.ReadAllLines("./items.txt").Where(x => string.IsNullOrWhiteSpace(x) == false).Where(x => x[0] != '#').ToArray();
+			string[] items = FileManager.ReadAllLines("./items.txt");
 			if (items.Length < 0)
 			{
-				plugin.Error("Couldn't get any item from that file, homie");
+				plugin.Error("Your 'items.txt' file is completely blank.");
 				return;
 			}
 			else
@@ -83,7 +85,10 @@ namespace RogerFKspawner
 				foreach (string item in items)
 				{
 					i++;
-					//if (string.IsNullOrWhiteSpace(item)) continue;
+
+					if (string.IsNullOrWhiteSpace(item)) continue;
+                    if (item[0] == '#') continue;
+
 					try
 					{
 						// RoomType:ItemType, ItemType2...:Probability:Vector:Rotation
@@ -128,7 +133,6 @@ namespace RogerFKspawner
 						{
 							continue;
 						}
-
 						Vector rotation = VectorParser(data[4], i);
 						if (rotation == null)
 						{
@@ -154,10 +158,9 @@ namespace RogerFKspawner
 						{
 							Spawner.AddItem(room, spawn.itemType[rand.Next(0, spawn.itemType.Length - 1)], spawn.position, spawn.rotation);
 						}
-						spawnlist.Remove(spawn); // If this ever gives an exception, I'm fucking done
 					}
 				}
-			}
+            }
 		}
 	}
 	public struct SpawnInfo
@@ -175,16 +178,6 @@ namespace RogerFKspawner
 			this.probability = probability;
 			this.position = position;
 			this.rotation = rotation;
-		}
-
-		public override bool Equals(object obj)
-		{
-			return base.Equals(obj);
-		}
-
-		public override int GetHashCode()
-		{
-			return base.GetHashCode();
 		}
 	}
 }
