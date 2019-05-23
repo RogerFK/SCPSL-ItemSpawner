@@ -140,7 +140,7 @@ namespace RogerFKspawner
 						}
 
 						// If it worked until here means everything went to plan uwu
-						spawnlist.Add(new SpawnInfo(room, itemTypes.ToArray(), probability, position, rotation));
+						spawnlist.Add(new SpawnInfo(room, i, itemTypes.ToArray(), probability, position, rotation));
 					}
 					catch (Exception e)
 					{
@@ -156,27 +156,49 @@ namespace RogerFKspawner
 					{
 						if (rand.Next(0, 10000) <= spawn.probability * 100)
 						{
-							Spawner.AddItem(room, spawn.itemType[rand.Next(0, spawn.itemType.Length - 1)], spawn.position, spawn.rotation);
+							Spawner.AddItem(room, spawn.items[rand.Next(0, spawn.items.Length - 1)], spawn.position, spawn.rotation);
 						}
 					}
 				}
             }
 		}
-	}
+        public void DelSpawnInfo(SpawnInfo spawnInfo)
+        {
+            FileManager.ReplaceLine(spawnInfo.line, "", "./items.txt");
+        }
+        public void UpdateSpawnInfo(SpawnInfo spawnInfo)
+        {
+            // This causes an exception if the any retard removes the items.txt file
+            FileManager.ReplaceLine(spawnInfo.line, SpawnInfoToStr(spawnInfo), "./items.txt");
+        }
+        public string SpawnInfoToStr(SpawnInfo spawnInfo)
+        {
+            return spawnInfo.RoomType.ToString() + ':' + string.Join(",", spawnInfo.items.ToString()) + ':' + spawnInfo.probability +
+                        ':' + spawnInfo.position.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                        ',' + spawnInfo.position.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                        ',' + spawnInfo.position.z.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                        ':' + spawnInfo.rotation.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                        ',' + spawnInfo.rotation.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                        ',' + spawnInfo.rotation.z.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
 	public struct SpawnInfo
 	{
 		public readonly RoomType RoomType;
-		public readonly ItemType[] itemType;
-		public readonly float probability;
-		public readonly Vector position;
-		public readonly Vector rotation;
+        public readonly Vector position;
+        public readonly int line; // This saves the line to later modify it
 
-		public SpawnInfo(RoomType roomType, ItemType[] itemType, float probability, Vector position, Vector rotation)
+        public ItemType[] items;
+		public float probability;
+		public Vector rotation;
+
+		public SpawnInfo(RoomType roomType, int line, ItemType[] itemType, float probability, Vector position, Vector rotation)
 		{
 			RoomType = roomType;
-			this.itemType = itemType;
+			this.items = itemType;
 			this.probability = probability;
-			this.position = position;
+            this.line = line;
+            this.position = position;
 			this.rotation = rotation;
 		}
 	}
