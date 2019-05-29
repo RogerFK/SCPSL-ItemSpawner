@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Smod2.API;
 using Smod2.Attributes;
+using Smod2.Config;
 using Smod2.EventHandlers;
 using Smod2.Events;
-using System.IO;
-using Smod2.Config;
 
-namespace RogerFKspawner
+namespace ItemSpawner
 {
 	[PluginDetails(
 		author = "RogerFK",
@@ -25,26 +25,26 @@ namespace RogerFKspawner
 	{
 		public override void OnDisable()
 		{
-			this.Info("Thank god you disabled me. Your CPU will surely thank you tbh");
+			Info("Thank god you disabled me. Your CPU will surely thank you tbh");
 		}
 
 		public override void OnEnable()
 		{
-			this.Info("Stuff spawner enabled");
+			Info("Stuff spawner enabled");
 		}
-        [ConfigOption]
-        public string[] allowedranks = new string[] { "owner", "admin" };
+		[ConfigOption]
+		public string[] allowedranks = new string[] { "owner", "admin" };
 		public override void Register()
 		{
-			this.AddEventHandlers(new SpawnParser(this), Priority.Low);
+			AddEventHandlers(new SpawnParser(this), Priority.Low);
 			Spawner.Init(this);
-			AddCommand("itemspawner", new Spawner());
+			AddCommand("itemspawner", new ItemSpawnerCommand(this));
 		}
 	}
 	public class SpawnParser : IEventHandlerWaitingForPlayers
 	{
 		private readonly Plugin plugin;
-		private System.Random rand = new System.Random();
+		private readonly Random rand = new Random();
 
 		public SpawnParser(Plugin plugin)
 		{
@@ -86,8 +86,15 @@ namespace RogerFKspawner
 				{
 					i++;
 
-					if (string.IsNullOrWhiteSpace(item)) continue;
-                    if (item[0] == '#') continue;
+					if (string.IsNullOrWhiteSpace(item))
+					{
+						continue;
+					}
+
+					if (item[0] == '#')
+					{
+						continue;
+					}
 
 					try
 					{
@@ -102,7 +109,7 @@ namespace RogerFKspawner
 							plugin.Info("Error reading line " + i);
 							continue;
 						}
-						if (!Enum.TryParse<RoomType>(data[0], out RoomType room))
+						if (!Enum.TryParse(data[0], out RoomType room))
 						{
 							plugin.Info("Error using RoomType " + data[0] + " in line " + i);
 							continue;
@@ -116,7 +123,7 @@ namespace RogerFKspawner
 						}
 						foreach (string itemDataValue in itemData)
 						{
-							if (!Enum.TryParse<ItemType>(itemDataValue, out ItemType itemType))
+							if (!Enum.TryParse(itemDataValue, out ItemType itemType))
 							{
 								plugin.Info("Error using ItemType " + itemDataValue + " in line " + i);
 								continue;
@@ -160,45 +167,45 @@ namespace RogerFKspawner
 						}
 					}
 				}
-            }
+			}
 		}
-        public void DelSpawnInfo(SpawnInfo spawnInfo)
-        {
-            FileManager.ReplaceLine(spawnInfo.line, "", "./items.txt");
-        }
-        public void UpdateSpawnInfo(SpawnInfo spawnInfo)
-        {
-            // This causes an exception if the any retard removes the items.txt file
-            FileManager.ReplaceLine(spawnInfo.line, SpawnInfoToStr(spawnInfo), "./items.txt");
-        }
-        public string SpawnInfoToStr(SpawnInfo spawnInfo)
-        {
-            return spawnInfo.RoomType.ToString() + ':' + string.Join(",", spawnInfo.items.ToString()) + ':' + spawnInfo.probability +
-                        ':' + spawnInfo.position.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-                        ',' + spawnInfo.position.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-                        ',' + spawnInfo.position.z.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-                        ':' + spawnInfo.rotation.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-                        ',' + spawnInfo.rotation.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-                        ',' + spawnInfo.rotation.z.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        }
-    }
+		public void DelSpawnInfo(SpawnInfo spawnInfo)
+		{
+			FileManager.ReplaceLine(spawnInfo.line, "", "./items.txt");
+		}
+		public void UpdateSpawnInfo(SpawnInfo spawnInfo)
+		{
+			// This causes an exception if the any retard removes the items.txt file
+			FileManager.ReplaceLine(spawnInfo.line, SpawnInfoToStr(spawnInfo), "./items.txt");
+		}
+		public string SpawnInfoToStr(SpawnInfo spawnInfo)
+		{
+			return spawnInfo.RoomType.ToString() + ':' + string.Join(",", spawnInfo.items.ToString()) + ':' + spawnInfo.probability +
+						':' + spawnInfo.position.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+						',' + spawnInfo.position.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+						',' + spawnInfo.position.z.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+						':' + spawnInfo.rotation.x.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+						',' + spawnInfo.rotation.y.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+						',' + spawnInfo.rotation.z.ToString(System.Globalization.CultureInfo.InvariantCulture);
+		}
+	}
 	public struct SpawnInfo
 	{
 		public readonly RoomType RoomType;
-        public readonly Vector position;
-        public readonly int line; // This saves the line to later modify it
+		public readonly Vector position;
+		public readonly int line; // This saves the line to later modify it
 
-        public ItemType[] items;
+		public ItemType[] items;
 		public float probability;
 		public Vector rotation;
 
 		public SpawnInfo(RoomType roomType, int line, ItemType[] itemType, float probability, Vector position, Vector rotation)
 		{
 			RoomType = roomType;
-			this.items = itemType;
+			items = itemType;
 			this.probability = probability;
-            this.line = line;
-            this.position = position;
+			this.line = line;
+			this.position = position;
 			this.rotation = rotation;
 		}
 	}
