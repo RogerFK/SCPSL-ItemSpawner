@@ -44,7 +44,7 @@ namespace ItemSpawner
             return Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation)));
         }
 		[PipeMethod]
-        public static void AddItem(Room room, ItemType item, Vector vector, Vector rotation = null)
+        public static void SpawnItem(Room room, ItemType item, Vector vector, Vector rotation = null)
         {
             if (rotation == null)
             {
@@ -61,8 +61,8 @@ namespace ItemSpawner
             Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation))));
             ploogin.Info("Spawned " + item.ToString() + " in: " + room.RoomType.ToString());
         }
-		[PipeMethod]
-		public static void AddItem(RoomType room, ItemType item, Vector vector, Vector rotation = null)
+		[PipeMethod] // according to Androx, piped methods don't allow overloads
+		public static void SpawnInRoomType(RoomType room, ItemType item, Vector vector, Vector rotation = null)
         {
             if (rotation == null)
             {

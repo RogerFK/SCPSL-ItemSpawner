@@ -76,7 +76,7 @@ namespace ItemSpawner
 									"ITEMSPAWNER SPAWNLIST EDIT <position> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z]- Edits the element with it's position when those arguments are passed.\nExample: ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5",
 									"ITEMSPAWNER SPAWNLIST REMOVE <position> - Removes the element at the given position" };
 							case "ROOMLIST":
-								return new string[] { "ITEMSPAWNER ROOMLIST - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, tho." };
+								return new string[] { "ITEMSPAWNER ROOMLIST - Displays every RoomType in the game. Non-unique rooms like hallways will not work as intended, tho." };
 							default:
 								return new string[] { GetUsage() };
 						}
