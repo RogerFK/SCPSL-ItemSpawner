@@ -1,4 +1,5 @@
-﻿using Smod2;
+﻿using System.Collections.Generic;
+using Smod2;
 using Smod2.API;
 using Smod2.Attributes;
 using Smod2.Config;
@@ -39,11 +40,11 @@ namespace ItemSpawner
 	public struct SpawnInfo
 	{
 		public readonly RoomType RoomType;
-		public readonly Vector position;
 		public readonly int line; // This saves the line to later modify it
 
 		public ItemType[] items;
 		public float probability;
+		public Vector position;
 		public Vector rotation;
 
 		public SpawnInfo(RoomType roomType, int line, ItemType[] itemType, float probability, Vector position, Vector rotation)
