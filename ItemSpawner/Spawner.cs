@@ -15,9 +15,9 @@ namespace ItemSpawner
 {
     internal class Spawner : IEventHandlerWaitingForPlayers
     {
-        private static Plugin ploogin;
+        private static ItemSpawner ploogin;
 
-        public static void Init(Plugin plugin, Priority priority = Priority.Highest)
+        public static void Init(ItemSpawner plugin, Priority priority = Priority.Highest)
         {
             ploogin = plugin;
             plugin.AddEventHandlers(new Spawner(), priority);

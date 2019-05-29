@@ -16,12 +16,12 @@ namespace ItemSpawner
 {
 	class ItemSpawnerCommand : ICommandHandler, IEventHandlerCallCommand
 	{
-		private readonly Plugin plugin;
+		private readonly ItemSpawner plugin;
 
 		private List<GameObject> items = new List<GameObject>();
 
 		private List<SpawnInfo> addList = new List<SpawnInfo>();
-		public ItemSpawnerCommand(Plugin plugin)
+		public ItemSpawnerCommand(ItemSpawner plugin)
 		{
 			this.plugin = plugin;
 		}
@@ -71,11 +71,11 @@ namespace ItemSpawner
 									"ITEMSPAWNER ADDLIST EDIT <position> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z]- Edits the element with it's position when those arguments are passed.\nExample: ITEMSPAWNER ADDLIST EDIT 2 items=COIN,MEDKIT rotation=1,0,0 probability=12.5",
 									"ITEMSPAWNER ADDLIST REMOVE <position> - Removes the element at the given position",
 									"ITEMSPAWNER ADDLIST CONFIRM - Saves the current list to items.txt" };
-							case "SPAWNLIST":
+							case "SPAWNLIST": // current
 								return new string[] { "ITEMSPAWNER SPAWNLIST - Displays the current spawnlist",
 									"ITEMSPAWNER SPAWNLIST EDIT <position> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z]- Edits the element with it's position when those arguments are passed.\nExample: ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5",
 									"ITEMSPAWNER SPAWNLIST REMOVE <position> - Removes the element at the given position" };
-							case "ROOMLIST":
+							case "ROOMLIST": // done
 								return new string[] { "ITEMSPAWNER ROOMLIST - Displays every RoomType in the game. Non-unique rooms like hallways will not work as intended, tho." };
 							default:
 								return new string[] { GetUsage() };
@@ -83,6 +83,12 @@ namespace ItemSpawner
 					}
 					return new string[] { GetUsage() };
 				#endregion
+				case "ADDLIST":
+					if (args.Count() > 1)
+					{
+
+					}
+					return new string[] { GetUsage() };
 				case "ROOMLIST":
 					string retValue = "List:\n";
 					foreach (RoomType room in Enum.GetValues(typeof(RoomType)))
@@ -90,12 +96,6 @@ namespace ItemSpawner
 						retValue += room.ToString() + ", ";
 					}
 					return new string[] { retValue };
-				case "ADDLIST":
-					if (args.Count() > 1)
-					{
-
-					}
-					return new string[] { GetUsage() };
 			}
 			string returnValueLocal = "Posiciones locales inversas:";
 			returnValueLocal += "\n";
