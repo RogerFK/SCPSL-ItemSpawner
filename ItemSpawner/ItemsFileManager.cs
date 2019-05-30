@@ -9,12 +9,12 @@ using Smod2.Events;
 
 namespace ItemSpawner
 {
-	public class ItemFileReader : IEventHandlerWaitingForPlayers
+	public class ItemsFileManager : IEventHandlerWaitingForPlayers
 	{
 		private readonly ItemSpawner plugin;
 		private readonly Random rand = new Random();
 
-		public ItemFileReader(ItemSpawner plugin)
+		public ItemsFileManager(ItemSpawner plugin)
 		{
 			this.plugin = plugin;
 		}
@@ -149,7 +149,7 @@ namespace ItemSpawner
 			// This causes an exception if the any retard removes the items.txt file
 			FileManager.ReplaceLine(spawnInfo.line, SpawnInfoToStr(spawnInfo), "./items.txt");
 		}
-		public string SpawnInfoToStr(SpawnInfo spawnInfo)
+		public static string SpawnInfoToStr(SpawnInfo spawnInfo)
 		{
 			return spawnInfo.RoomType.ToString() + ':' + string.Join(",", spawnInfo.items.ToString()) + ':' + spawnInfo.probability +
 						':' + spawnInfo.position.x.ToString(CultureInfo.InvariantCulture) +

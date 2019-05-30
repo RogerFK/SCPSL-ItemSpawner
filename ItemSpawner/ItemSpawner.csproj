@@ -69,7 +69,7 @@
     <Compile Include="Spawner.cs" />
     <Compile Include="ItemSpawner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ItemFileReader.cs" />
+    <Compile Include="ItemsFileManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

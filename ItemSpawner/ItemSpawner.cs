@@ -32,7 +32,7 @@ namespace ItemSpawner
 		public string[] allowedranks = new string[] { "owner", "admin" };
 		public override void Register()
 		{
-			AddEventHandlers(new ItemFileReader(this), Priority.Low);
+			AddEventHandlers(new ItemsFileManager(this), Priority.Low);
 			Spawner.Init(this);
 			AddCommand("itemspawner", new ItemSpawnerCommand(this));
 		}

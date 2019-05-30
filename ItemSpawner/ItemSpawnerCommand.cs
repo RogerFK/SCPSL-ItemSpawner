@@ -89,14 +89,23 @@ namespace ItemSpawner
 					{
 						switch (args[1].ToUpper())
 						{
+							case "CONFIRM":
+								foreach(SpawnInfo finalSpawnInfo in addList)
+								{
+									FileManager.AppendFile(ItemsFileManager.SpawnInfoToStr(finalSpawnInfo), "./items.txt", true);
+								}
+								addList.Clear();
+								return new string[] { "New spawns succesfully written to the file items.txt" };
 							case "EDIT":
 								if(args.Count() < 3)
 								{
-									return new string[] { "Usage: ITEMSPAWNER EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5. Items CAN'T be separated with spaces." };
+									return new string[] { "Usage: ITEMSPAWNER EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
 								}
-
 								// Here comes the fun part.
-								
+								if(addList.Count == 0)
+								{
+									return new string[] { "There are no items in the ADDLIST." };
+								}
 								if(!int.TryParse(args[2], out int id))
 								{
 									return new string[] { "Please, enter a numerical ID." };
@@ -105,7 +114,7 @@ namespace ItemSpawner
 								{
 									return new string[] { "Please, enter a valid ID." };
 								}
-								SpawnInfo spawnInfo = addList.ElementAt(id);
+								SpawnInfo spawnInfo = addList.ElementAt(id-1);
 								string returningString = "Item with ID " + args[2];
 								string[] editArgs = args.Skip(3).ToArray();
 								for(int i = 0; i < editArgs.Count(); i++)
@@ -173,6 +182,25 @@ namespace ItemSpawner
 									}
 								}
 								return new string[] { returningString };
+							case "REMOVE":
+								if (addList.Count == 0)
+								{
+									return new string[] { "There are no items in the ADDLIST." };
+								}
+								if (args.Count() < 2)
+								{
+									return new string[] { "Usage: ITEMSPAWNER REMOVE <id>" };
+								}
+								if (!int.TryParse(args[2], out int removeId))
+								{
+									return new string[] { "Please, enter a numerical ID." };
+								}
+								if (addList.Count < removeId)
+								{
+									return new string[] { "Please, enter a valid ID." };
+								}
+								addList.RemoveAt(removeId - 1);
+								return new string[] { $"Item with ID {args[2]} successfully removed" };
 						}
 					}
 					else
