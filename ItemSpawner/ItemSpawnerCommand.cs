@@ -17,7 +17,7 @@ namespace ItemSpawner
 	{
 		private readonly ItemSpawner plugin;
 
-		private List<GameObject> spawnedCoins = new List<GameObject>();
+		private List<PosVectorPair> spawnedCoins = new List<PosVectorPair>();
 
 		private List<SpawnInfo> addList = new List<SpawnInfo>();
 		public ItemSpawnerCommand(ItemSpawner plugin)
@@ -34,7 +34,7 @@ namespace ItemSpawner
 		{
 			return "You can type ITEMSPAWNER HELP [COMMAND] for more info about one specific command. <> means it's mandatory, [] is optional\n" +
 				   "ITEMSPAWNER ADDCOINS <RoomType> - Adds the coin spawned through the newpos command to a list you can later modify, then removes them from the map\n" +
-				   "ITEMSPAWNER DELCOINS - Deletes all coins that have been spawned through the newpos command\n" +
+				   "ITEMSPAWNER CLEARLIST - Deletes all coins that have been spawned through the newpos command\n" +
 				   "ITEMSPAWNER ADDLIST [EDIT/REMOVE/CONFIRM] - Displays the current list that will be added to the items.txt file\n" +
 				   "ITEMSPAWNER SPAWNLIST [EDIT/REMOVE] - Displays or modifies the current spawnlist, so you can modify it\n" +
 				   "ITEMSPAWNER ROOMLIST - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, tho.";
@@ -50,7 +50,7 @@ namespace ItemSpawner
 			}
 			if (args.Length == 0)
 			{
-				return new string[] { "Please, introduce a second argument", "<ADDCOINS/DELCOINS/ADDLIST/SPAWNLIST/ROOMLIST>" };
+				return new string[] { "Please, introduce a second argument", "<ADDCOINS/CLEARLIST/ADDLIST/SPAWNLIST/ROOMLIST>" };
 			}
 			switch (args[0].ToUpper())
 			{
@@ -63,8 +63,8 @@ namespace ItemSpawner
 							case "ADDCOINS":
 								return new string[] { "ITEMSPAWNER ADDCOINS <RoomType> - Adds the coins to spawn relatively to a roomtype from the list in ITEMSPAWNER ROOMLIST to a new list in ITEMSPAWNER ADDLIST so you can modify them one by one," +
 									" then removes them from the map, and then you can use ITEMSPAWNER ADDLIST to modify their parameters (such as it's probability, etc.)." };
-							case "DELCOINS":
-								return new string[] { "ITEMSPAWNER DELCOINS - Deletes all coins that have been spawned through the newpos command" };
+							case "CLEARLIST":
+								return new string[] { "ITEMSPAWNER CLEARLIST - Deletes all coins that have been spawned through the newpos command" };
 							case "ADDLIST": // currently being developed
 								return new string[] { "ITEMSPAWNER ADDLIST - Displays the current list that will get added when you do ITEMSPAWNER ADDLIST CONFIRM",
 									"ITEMSPAWNER ADDLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]- Edits the element with it's id when those arguments are passed.\nExample: ITEMSPAWNER ADDLIST EDIT 2 items=COIN,MEDKIT rotation=1,0,0 probability=12.5",
@@ -82,7 +82,9 @@ namespace ItemSpawner
 					}
 					return new string[] { GetUsage() };
 				#endregion
-
+				case "CLEARLIST":
+					spawnedCoins.Clear();
+					return new string[] { "Cleared the list of spawned coins" };
 				case "ADDCOINS":
 					if(args.Count() < 2)
 					{
@@ -91,15 +93,20 @@ namespace ItemSpawner
 					if(!Enum.TryParse(args[1], out RoomType muhRoomType)){
 						return new string[]{ "Introduce a valid RoomType." };
 					}
+					if(spawnedCoins.Count == 0)
+					{
+						return new string[] { "Currently, the spawned coin list is empty" };
+					}
 					Room muhRoom = Spawner.rooms.Where(x => x.RoomType.Equals(muhRoomType)).First();
 					int lines = FileManager.ReadAllLines("./items.txt").Count();
-					foreach(GameObject coinToAdd in spawnedCoins)
+					plugin.Info(spawnedCoins.Count.ToString());
+					foreach(PosVectorPair pair in spawnedCoins)
 					{
 						lines++;
-						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, Spawner.Vec3ToVector(coinToAdd.transform.position)), Spawner.GetRelativePosition(muhRoom, Spawner.Vec3ToVector(coinToAdd.transform.rotation.eulerAngles))));
+						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativePosition(muhRoom, pair.rotation)));
 					}
-					DeleteCoins();
-					return new string[] { "Added coins to the ADDLIST" };
+					ClearList();
+					return new string[] { "Added coins to the ADDLIST and cleared the list" };
 				case "ADDLIST":
 					if (args.Count() > 1)
 					{
@@ -224,6 +231,10 @@ namespace ItemSpawner
 					}
 					else
 					{
+						if(addList.Count == 0)
+						{
+							return new string[] { "There are no items in the ADDLIST." };
+						}
 						// RoomType:ItemType, ItemType2...:Probability:Vector:Rotation
 						string addListString = "List:\n";
 						int i = 0;
@@ -398,12 +409,11 @@ namespace ItemSpawner
 				}
 				else
 				{
-					Inventory component = GameObject.Find("Host").GetComponent<Inventory>();
-					if (component != null)
-					{
-						GameObject auxItem = component.SetPickup((int)ItemType.COIN, -4.6566467E+11f, where.point, Quaternion.Euler(new Vector3(-plyRot.x, plyRot.y, -plyRot.z)), 0, 0, 0);
-						spawnedCoins.Add(auxItem);
-					}
+					// -plyRot.x, plyRot.y, -plyRot.z
+					Vector rotation = new Vector(-plyRot.x, plyRot.y, -plyRot.z), position = Spawner.Vec3ToVector(where.point) + (Vector.Up * 0.1f);
+					//GameObject auxItem = component.SetPickup((int)ItemType.COIN, -4.6566467E+11f, where.point, Quaternion.Euler(new Vector3(-plyRot.x, plyRot.y, -plyRot.z)), 0, 0, 0);
+					PluginManager.Manager.Server.Map.SpawnItem(ItemType.COIN, position, rotation);
+					spawnedCoins.Add(new PosVectorPair(position, rotation));
 					Room room = ClosestRoom(where.point);
 					ev.ReturnMessage = "Added " + where.point.ToString() + " to the list."
 						+ "\nYou're probably looking for the RoomType: " + room.RoomType.ToString();
@@ -425,12 +435,8 @@ namespace ItemSpawner
 			}
 			return room;
 		}
-		public void DeleteCoins()
+		public void ClearList()
 		{
-			foreach (GameObject aux in spawnedCoins)
-			{
-				NetworkServer.Destroy(aux);
-			}
 			spawnedCoins.Clear();
 		}
 		private Vector ParseRot(string vectorData)

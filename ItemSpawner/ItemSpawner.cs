@@ -33,6 +33,7 @@ namespace ItemSpawner
 		public override void Register()
 		{
 			AddEventHandlers(new ItemsFileManager(this), Priority.Low);
+			AddEventHandlers(new ItemSpawnerCommand(this), Priority.Low);
 			Spawner.Init(this);
 			AddCommand("itemspawner", new ItemSpawnerCommand(this));
 		}
@@ -53,6 +54,16 @@ namespace ItemSpawner
 			items = itemType;
 			this.probability = probability;
 			this.line = line;
+			this.position = position;
+			this.rotation = rotation;
+		}
+	}
+	public struct PosVectorPair
+	{
+		public readonly Vector position;
+		public readonly Vector rotation;
+		public PosVectorPair(Vector position, Vector rotation)
+		{
 			this.position = position;
 			this.rotation = rotation;
 		}
