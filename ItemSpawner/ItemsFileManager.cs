@@ -140,6 +140,16 @@ namespace ItemSpawner
 				}
 			}
 		}
+		public static string ParseItems(ItemType[] items)
+		{
+			int i, size = items.Count();
+			string parsedValue = string.Empty;
+			for (i = 0; i < size; i++)
+			{
+				parsedValue += items[i] + (i != size-1 ? ", " : string.Empty);
+			}
+			return parsedValue;
+		}
 		public static void DelSpawnInfo(SpawnInfo spawnInfo)
 		{
 			// I don't know if this works

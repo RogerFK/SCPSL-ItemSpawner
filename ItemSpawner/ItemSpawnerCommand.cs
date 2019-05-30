@@ -17,9 +17,9 @@ namespace ItemSpawner
 	{
 		private readonly ItemSpawner plugin;
 
-		private List<PosVectorPair> spawnedCoins = new List<PosVectorPair>();
+		private static List<PosVectorPair> spawnedCoins = new List<PosVectorPair>(50);
 
-		private List<SpawnInfo> addList = new List<SpawnInfo>();
+		private static List<SpawnInfo> addList = new List<SpawnInfo>(50);
 		public ItemSpawnerCommand(ItemSpawner plugin)
 		{
 			this.plugin = plugin;
@@ -105,7 +105,7 @@ namespace ItemSpawner
 						lines++;
 						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativePosition(muhRoom, pair.rotation)));
 					}
-					ClearList();
+					spawnedCoins.Clear();
 					return new string[] { "Added coins to the ADDLIST and cleared the list" };
 				case "ADDLIST":
 					if (args.Count() > 1)
@@ -160,7 +160,7 @@ namespace ItemSpawner
 											returningString += "\nPlease, introduce valid items.";
 										}
 										spawnInfo.items = itemsToAdd;
-										returningString += "\nModified to use items " + itemsToAdd;
+										returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items);
 									}
 									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
 									{
@@ -242,7 +242,7 @@ namespace ItemSpawner
 						{
 							i++;
 							addListString += i + ". - " + spawnInfo.RoomType.ToString()
-								+ " - " + spawnInfo.items.ToString()
+								+ " - " + ItemsFileManager.ParseItems(spawnInfo.items)
 								+ " - " + spawnInfo.probability.ToString()
 								+ " - " + spawnInfo.position.ToString()
 								+ " - " + spawnInfo.rotation.ToString();
@@ -267,7 +267,7 @@ namespace ItemSpawner
 						{
 							i++;
 							spawnlistString += i + ". - " + spawnInfo.RoomType.ToString()
-								+ " - " + spawnInfo.items.ToString()
+								+ " - " + ItemsFileManager.ParseItems(spawnInfo.items)
 								+ " - " + spawnInfo.probability.ToString()
 								+ " - " + spawnInfo.position.ToString()
 								+ " - " + spawnInfo.rotation.ToString();
@@ -316,7 +316,7 @@ namespace ItemSpawner
 											returningString += "\nPlease, introduce valid items.";
 										}
 										spawnInfo.items = itemsToAdd;
-										returningString += "\nModified to use items " + itemsToAdd;
+										returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items);
 									}
 									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
 									{
@@ -409,11 +409,10 @@ namespace ItemSpawner
 				}
 				else
 				{
-					// -plyRot.x, plyRot.y, -plyRot.z
 					Vector rotation = new Vector(-plyRot.x, plyRot.y, -plyRot.z), position = Spawner.Vec3ToVector(where.point) + (Vector.Up * 0.1f);
-					//GameObject auxItem = component.SetPickup((int)ItemType.COIN, -4.6566467E+11f, where.point, Quaternion.Euler(new Vector3(-plyRot.x, plyRot.y, -plyRot.z)), 0, 0, 0);
 					PluginManager.Manager.Server.Map.SpawnItem(ItemType.COIN, position, rotation);
 					spawnedCoins.Add(new PosVectorPair(position, rotation));
+					plugin.Info(spawnedCoins.Count.ToString());
 					Room room = ClosestRoom(where.point);
 					ev.ReturnMessage = "Added " + where.point.ToString() + " to the list."
 						+ "\nYou're probably looking for the RoomType: " + room.RoomType.ToString();
@@ -434,10 +433,6 @@ namespace ItemSpawner
 				}
 			}
 			return room;
-		}
-		public void ClearList()
-		{
-			spawnedCoins.Clear();
 		}
 		private Vector ParseRot(string vectorData)
 		{
