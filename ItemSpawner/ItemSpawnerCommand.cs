@@ -84,6 +84,22 @@ namespace ItemSpawner
 					}
 					return new string[] { GetUsage() };
 				#endregion
+
+				case "ADDCOINS":
+					if(args.Count() < 2)
+					{
+						return new string[] { "Usage: ITEMSPAWNER ADDCOINS <RoomType> - Adds the coin spawned through the newpos command to a list you can later modify, then removes them from the map" };
+					}
+					if(!Enum.TryParse(args[1], out RoomType muhRoomType)){
+						return new string[]{ "Introduce a valid RoomType." };
+					}
+					Room muhRoom = Spawner.rooms.Where(x => x.RoomType.Equals(muhRoomType)).First();
+					foreach(GameObject coinToAdd in spawnedCoins)
+					{
+						addList.Add(new SpawnInfo(muhRoomType, 0 /*I should have a count of the total lines in the file, will get implemented*/, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, Spawner.Vec3ToVector(coinToAdd.transform.position)), Spawner.GetRelativePosition(muhRoom, Spawner.Vec3ToVector(coinToAdd.transform.rotation.eulerAngles))));
+					}
+					DeleteCoins();
+					return new string[] { "success dood" };
 				case "ADDLIST":
 					if (args.Count() > 1)
 					{
