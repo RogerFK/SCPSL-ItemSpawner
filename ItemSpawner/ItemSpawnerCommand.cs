@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Smod2;
 using Smod2.API;
@@ -94,59 +92,63 @@ namespace ItemSpawner
 						return new string[]{ "Introduce a valid RoomType." };
 					}
 					Room muhRoom = Spawner.rooms.Where(x => x.RoomType.Equals(muhRoomType)).First();
+					int lines = FileManager.ReadAllLines("./items.txt").Count();
 					foreach(GameObject coinToAdd in spawnedCoins)
 					{
-						addList.Add(new SpawnInfo(muhRoomType, 0 /*I should have a count of the total lines in the file, will get implemented*/, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, Spawner.Vec3ToVector(coinToAdd.transform.position)), Spawner.GetRelativePosition(muhRoom, Spawner.Vec3ToVector(coinToAdd.transform.rotation.eulerAngles))));
+						lines++;
+						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, Spawner.Vec3ToVector(coinToAdd.transform.position)), Spawner.GetRelativePosition(muhRoom, Spawner.Vec3ToVector(coinToAdd.transform.rotation.eulerAngles))));
 					}
 					DeleteCoins();
-					return new string[] { "success dood" };
+					return new string[] { "Added coins to the ADDLIST" };
 				case "ADDLIST":
 					if (args.Count() > 1)
 					{
+						#region Addlist Region
 						switch (args[1].ToUpper())
 						{
 							case "CONFIRM":
-								foreach(SpawnInfo finalSpawnInfo in addList)
+								foreach (SpawnInfo finalSpawnInfo in addList)
 								{
 									FileManager.AppendFile(ItemsFileManager.SpawnInfoToStr(finalSpawnInfo), "./items.txt", true);
+									ItemsFileManager.spawnlist.Add(finalSpawnInfo);
 								}
 								addList.Clear();
 								return new string[] { "New spawns succesfully written to the file items.txt" };
 							case "EDIT":
-								if(args.Count() < 3)
+								if (args.Count() < 3)
 								{
-									return new string[] { "Usage: ITEMSPAWNER EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
+									return new string[] { "Usage: ITEMSPAWNER SPAWNLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
 								}
 								// Here comes the fun part.
-								if(addList.Count == 0)
+								if (addList.Count == 0)
 								{
 									return new string[] { "There are no items in the ADDLIST." };
 								}
-								if(!int.TryParse(args[2], out int id))
+								if (!int.TryParse(args[2], out int id))
 								{
 									return new string[] { "Please, enter a numerical ID." };
 								}
-								if(addList.Count < id)
+								if (addList.Count < id)
 								{
 									return new string[] { "Please, enter a valid ID." };
 								}
-								SpawnInfo spawnInfo = addList.ElementAt(id-1);
+								SpawnInfo spawnInfo = addList.ElementAt(id - 1);
 								string returningString = "Item with ID " + args[2];
 								string[] editArgs = args.Skip(3).ToArray();
-								for(int i = 0; i < editArgs.Count(); i++)
+								for (int i = 0; i < editArgs.Count(); i++)
 								{
 									if (editArgs[i].ToUpper().StartsWith("ITEMS="))
 									{
 										string[] probablyItems = editArgs[i].Substring(6).Split(',');
 										ItemType[] itemsToAdd = new ItemType[probablyItems.Count()];
-										foreach(string item in probablyItems)
+										foreach (string item in probablyItems)
 										{
-											if(Enum.TryParse(item, out ItemType itemType))
+											if (Enum.TryParse(item, out ItemType itemType))
 											{
 												itemsToAdd.Append(itemType);
 											}
 										}
-										if(itemsToAdd.Count() == 0)
+										if (itemsToAdd.Count() == 0)
 										{
 											returningString += "\nPlease, introduce valid items.";
 										}
@@ -156,20 +158,20 @@ namespace ItemSpawner
 									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
 									{
 										string prob = editArgs[i].Substring(12);
-										if(float.TryParse(prob, out float probParsed))
+										if (float.TryParse(prob, out float probParsed))
 										{
 											spawnInfo.probability = probParsed;
 											returningString += "\nModified to use probability " + prob;
 										}
 										else
 										{
-											returningString += "\nPlease, introduce a valid probability." ;
+											returningString += "\nPlease, introduce a valid probability.";
 										}
 									}
 									else if (editArgs[i].ToUpper().StartsWith("ROTATION="))
 									{
 										Vector vec = ParseRot(editArgs[i].Substring(9));
-										if(vec != null)
+										if (vec != null)
 										{
 											spawnInfo.rotation = vec;
 											returningString += "\nModified to use rotation " + vec;
@@ -217,7 +219,8 @@ namespace ItemSpawner
 								}
 								addList.RemoveAt(removeId - 1);
 								return new string[] { $"Item with ID {args[2]} successfully removed" };
-						}
+						} 
+						#endregion
 					}
 					else
 					{
@@ -235,7 +238,7 @@ namespace ItemSpawner
 						}
 						return new string[] { addListString };
 					}
-					return new string[] { GetUsage() };
+					break; // Don't ask why I have to place this break here
 				case "ROOMLIST":
 					string retValue = "List of ROOMTYPES:\n";
 					foreach (RoomType room in Enum.GetValues(typeof(RoomType)))
@@ -243,64 +246,136 @@ namespace ItemSpawner
 						retValue += room.ToString() + ", ";
 					}
 					return new string[] { retValue };
-			}
-			string returnValueLocal = "Posiciones locales inversas:";
-			returnValueLocal += "\n";
-			foreach (Room r in Spawner.rooms)
-			{
-				if (r.RoomType.ToString() == args[0])
-				{
-					foreach (Smod2.API.Item item in PluginManager.Manager.Server.Map.GetItems(ItemType.COIN, true))
+				case "SPAWNLIST":
+					if (args.Count() == 1)
 					{
-						Vector aux3 = Spawner.GetRelativePosition(r, item.GetPosition());
-						returnValueLocal += args[1] + ":COIN:";
-						returnValueLocal += aux3.x.ToString(CultureInfo.InvariantCulture) +
-						',' + aux3.y.ToString(CultureInfo.InvariantCulture) +
-						',' + aux3.z.ToString(CultureInfo.InvariantCulture) + ":0,0,0\n";
-					}
-					if (sender is Server)
-					{
-						foreach (Player player in PluginManager.Manager.Server.GetPlayers())
+						// RoomType:ItemType, ItemType2...:Probability:Vector:Rotation
+						string spawnlistString = "List:\n";
+						int i = 0;
+						foreach (SpawnInfo spawnInfo in ItemsFileManager.spawnlist)
 						{
-							Vector aux3 = Spawner.GetRelativePosition(r, player.GetPosition());
-							returnValueLocal += player.Name + "'s position: " + aux3.x.ToString(CultureInfo.InvariantCulture) +
-							',' + aux3.y.ToString(CultureInfo.InvariantCulture) +
-							',' + aux3.z.ToString(CultureInfo.InvariantCulture) + '\n';
+							i++;
+							spawnlistString += i + ". - " + spawnInfo.RoomType.ToString()
+								+ " - " + spawnInfo.items.ToString()
+								+ " - " + spawnInfo.probability.ToString()
+								+ " - " + spawnInfo.position.ToString()
+								+ " - " + spawnInfo.rotation.ToString();
 						}
+						return new string[] { spawnlistString }; 
 					}
-					else if (sender is Player player)
-					{
-						Vector aux3 = Spawner.GetRelativePosition(r, player.GetPosition());
-						returnValueLocal += "Your position: " + aux3.x.ToString(CultureInfo.InvariantCulture) +
-						',' + aux3.y.ToString(CultureInfo.InvariantCulture) +
-						',' + aux3.z.ToString(CultureInfo.InvariantCulture) + '\n';
-					}
-					plugin.Info(returnValueLocal);
-					return new string[] { returnValueLocal };
-				}
+					else switch(args[1].ToUpper())
+						{
+							case "EDIT":
+								if (args.Count() < 3)
+								{
+									return new string[] { "Usage: ITEMSPAWNER SPAWNLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
+								}
+								// Here comes the fun part.
+								if (addList.Count == 0)
+								{
+									return new string[] { "There are no items in the SPAWNLIST." };
+								}
+								if (!int.TryParse(args[2], out int id))
+								{
+									return new string[] { "Please, enter a numerical ID." };
+								}
+								if (addList.Count < id)
+								{
+									return new string[] { "Please, enter a valid ID." };
+								}
+								SpawnInfo spawnInfoRef = ItemsFileManager.spawnlist.ElementAt(id - 1);
+								SpawnInfo spawnInfo = new SpawnInfo(spawnInfoRef.RoomType, spawnInfoRef.line, spawnInfoRef.items, spawnInfoRef.probability, spawnInfoRef.position, spawnInfoRef.rotation);
+								string returningString = "Item with ID " + args[2];
+								string[] editArgs = args.Skip(3).ToArray();
+								for (int i = 0; i < editArgs.Count(); i++)
+								{
+									if (editArgs[i].ToUpper().StartsWith("ITEMS="))
+									{
+										string[] probablyItems = editArgs[i].Substring(6).Split(',');
+										ItemType[] itemsToAdd = new ItemType[probablyItems.Count()];
+										foreach (string item in probablyItems)
+										{
+											if (Enum.TryParse(item, out ItemType itemType))
+											{
+												itemsToAdd.Append(itemType);
+											}
+										}
+										if (itemsToAdd.Count() == 0)
+										{
+											returningString += "\nPlease, introduce valid items.";
+										}
+										spawnInfo.items = itemsToAdd;
+										returningString += "\nModified to use items " + itemsToAdd;
+									}
+									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
+									{
+										string prob = editArgs[i].Substring(12);
+										if (float.TryParse(prob, out float probParsed))
+										{
+											spawnInfo.probability = probParsed;
+											returningString += "\nModified to use probability " + prob;
+										}
+										else
+										{
+											returningString += "\nPlease, introduce a valid probability.";
+										}
+									}
+									else if (editArgs[i].ToUpper().StartsWith("ROTATION="))
+									{
+										Vector vec = ParseRot(editArgs[i].Substring(9));
+										if (vec != null)
+										{
+											spawnInfo.rotation = vec;
+											returningString += "\nModified to use rotation " + vec;
+										}
+										else
+										{
+											returningString += "\nPlease introduce a valid rotation (X.XX,Y.YY,Z.ZZ)";
+										}
+									}
+									else if (editArgs[i].ToUpper().StartsWith("POSITION="))
+									{
+										Vector vec = ParseRot(editArgs[i].Substring(9));
+										if (vec != null)
+										{
+											spawnInfo.position = vec;
+											returningString += "\nModified to use position " + vec;
+										}
+										else
+										{
+											returningString += "\nPlease introduce a valid position (X.XX,Y.YY,Z.ZZ)";
+										}
+									}
+									else
+									{
+										returningString += "\nUnknown parameter: " + editArgs[i];
+									}
+								}
+								ItemsFileManager.UpdateSpawnInfo(spawnInfoRef, spawnInfo);
+								return new string[] { returningString };
+							case "REMOVE":
+								if (ItemsFileManager.spawnlist.Count == 0)
+								{
+									return new string[] { "There are no items in the Spawnlist." };
+								}
+								if (args.Count() < 2)
+								{
+									return new string[] { "Usage: ITEMSPAWNER REMOVE <id>" };
+								}
+								if (!int.TryParse(args[2], out int removeId))
+								{
+									return new string[] { "Please, enter a numerical ID." };
+								}
+								if (ItemsFileManager.spawnlist.Count < removeId)
+								{
+									return new string[] { "Please, enter a valid ID." };
+								}
+								ItemsFileManager.DelSpawnInfo(ItemsFileManager.spawnlist.ElementAt(removeId - 1));
+								return new string[] { $"Item in line {args[2]} successfully removed" };
+						}
+					return new string[] { GetUsage() };
 			}
-			foreach (Room r in Spawner.rooms)
-			{
-				if (sender is Server)
-				{
-					foreach (Player rata in PluginManager.Manager.Server.GetPlayers())
-					{
-						Vector3 aux3 = (r.GetGameObject() as GameObject).transform.InverseTransformPoint(Spawner.VectorTo3(rata.GetPosition()));
-						returnValueLocal += rata.Name + "'s pos to " + r.RoomType.ToString() + ": " + aux3.x.ToString(CultureInfo.InvariantCulture) +
-						',' + aux3.y.ToString(CultureInfo.InvariantCulture) +
-						',' + aux3.z.ToString(CultureInfo.InvariantCulture) + '\n';
-					}
-				}
-				if (sender is Player tomto)
-				{
-					Vector3 aux3 = (r.GetGameObject() as GameObject).transform.InverseTransformPoint(Spawner.VectorTo3(tomto.GetPosition()));
-					returnValueLocal += "Your pos to: " + r.RoomType.ToString() + aux3.x.ToString(CultureInfo.InvariantCulture) +
-					", " + aux3.y.ToString(CultureInfo.InvariantCulture) +
-					", " + aux3.z.ToString(CultureInfo.InvariantCulture) + "\n";
-				}
-			}
-			plugin.Info(returnValueLocal);
-			return new string[] { returnValueLocal };
+			return new string[] { GetUsage() };
 		}
 
 		public void OnCallCommand(PlayerCallCommandEvent ev)

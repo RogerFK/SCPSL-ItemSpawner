@@ -35,6 +35,7 @@ namespace ItemSpawner
 			}
 			return new Vector(x, y, z);
 		}
+		public static List<SpawnInfo> spawnlist = new List<SpawnInfo>();
 		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
 		{
 			if (!FileManager.FileExists("./items.txt"))
@@ -42,7 +43,7 @@ namespace ItemSpawner
 				plugin.Info("Created items.txt file with a microhid (or a coin) in the Intercom room and one at the Silo warhead as an example.");
 				File.WriteAllText("./items.txt", "NUKE:MICROHID:100:-0.05,402.46,3.52:1,0,0\nINTERCOM:MICROHID,COIN:100:-9.212725,-6.839905,-3.935197:0.5,0,0");
 			}
-			List<SpawnInfo> spawnlist = new List<SpawnInfo>();
+			spawnlist.Clear(); //Reload the spawnlist
 			string[] items = FileManager.ReadAllLines("./items.txt");
 			if (items.Length < 0)
 			{
@@ -139,15 +140,16 @@ namespace ItemSpawner
 				}
 			}
 		}
-		public void DelSpawnInfo(SpawnInfo spawnInfo)
+		public static void DelSpawnInfo(SpawnInfo spawnInfo)
 		{
 			// I don't know if this works
 			FileManager.ReplaceLine(spawnInfo.line, "", "./items.txt");
+			spawnlist.Remove(spawnInfo);
 		}
-		public void UpdateSpawnInfo(SpawnInfo spawnInfo)
+		public static void UpdateSpawnInfo(SpawnInfo oldSpawnInfo, SpawnInfo newSpawnInfo)
 		{
-			// This causes an exception if the any retard removes the items.txt file
-			FileManager.ReplaceLine(spawnInfo.line, SpawnInfoToStr(spawnInfo), "./items.txt");
+			// This causes an exception if any retard removes the items.txt file
+			FileManager.ReplaceLine(oldSpawnInfo.line, SpawnInfoToStr(newSpawnInfo), "./items.txt");
 		}
 		public static string SpawnInfoToStr(SpawnInfo spawnInfo)
 		{
