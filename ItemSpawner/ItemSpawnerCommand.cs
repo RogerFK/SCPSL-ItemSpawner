@@ -373,11 +373,6 @@ namespace ItemSpawner
 								ItemsFileManager.spawnlist = ItemsFileManager.spawnlist.OrderBy(x => x.line).ToList();
 								return new string[] { returningString };
 							case "REMOVE":
-								bool nonimplemented = true;
-								if (nonimplemented)
-								{
-									return new string[] { "Not implemented." };
-								}
 								if (ItemsFileManager.spawnlist.Count == 0)
 								{
 									return new string[] { "There are no items in the Spawnlist." };
@@ -390,7 +385,7 @@ namespace ItemSpawner
 								{
 									return new string[] { "Please, enter a numerical ID." };
 								}
-								if (ItemsFileManager.spawnlist.Count < removeId)
+								if (ItemsFileManager.spawnlist.Count < removeId || removeId < 1)
 								{
 									return new string[] { "Please, enter a valid ID." };
 								}

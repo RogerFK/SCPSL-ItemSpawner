@@ -152,8 +152,8 @@ namespace ItemSpawner
 		}
 		public static void DelSpawnInfo(SpawnInfo spawnInfo)
 		{
-			// I don't know if this works
-			FileManager.ReplaceLine(spawnInfo.line, "", "./items.txt");
+			string oldStr = FileManager.ReadAllLines("./items.txt").ElementAt(spawnInfo.line);
+			FileManager.ReplaceLine(spawnInfo.line, "# Deleted SpawnInfo: " + oldStr, "./items.txt");
 			spawnlist.Remove(spawnInfo);
 		}
 		public static void UpdateSpawnInfo(SpawnInfo oldSpawnInfo, SpawnInfo newSpawnInfo)
