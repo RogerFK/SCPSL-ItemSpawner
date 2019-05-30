@@ -103,7 +103,7 @@ namespace ItemSpawner
 					foreach(PosVectorPair pair in spawnedCoins)
 					{
 						lines++;
-						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativePosition(muhRoom, pair.rotation)));
+						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativeRotation(muhRoom, pair.rotation)));
 					}
 					spawnedCoins.Clear();
 					return new string[] { "Added coins to the ADDLIST and cleared the list" };
@@ -135,11 +135,12 @@ namespace ItemSpawner
 								{
 									return new string[] { "Please, enter a numerical ID." };
 								}
-								if (addList.Count < id)
+								if (addList.Count < id || id < 1)
 								{
 									return new string[] { "Please, enter a valid ID." };
 								}
 								SpawnInfo spawnInfo = addList.ElementAt(id - 1);
+								addList.RemoveAt(id - 1);
 								string returningString = "Item with ID " + args[2];
 								string[] editArgs = args.Skip(3).ToArray();
 								for (int i = 0; i < editArgs.Count(); i++)
@@ -148,18 +149,22 @@ namespace ItemSpawner
 									{
 										string[] probablyItems = editArgs[i].Substring(6).Split(',');
 										ItemType[] itemsToAdd = new ItemType[probablyItems.Count()];
+										int j = 0;
 										foreach (string item in probablyItems)
 										{
 											if (Enum.TryParse(item, out ItemType itemType))
 											{
-												itemsToAdd.Append(itemType);
+												itemsToAdd[j] = itemType;
+												j++;
 											}
 										}
-										if (itemsToAdd.Count() == 0)
+										if (j == 0)
 										{
 											returningString += "\nPlease, introduce valid items.";
 										}
-										spawnInfo.items = itemsToAdd;
+										spawnInfo.items = itemsToAdd.Take(j).ToArray();
+										addList.Add(spawnInfo);
+										addList = addList.OrderBy(x => x.line).ToList();
 										returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items);
 									}
 									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
@@ -206,7 +211,7 @@ namespace ItemSpawner
 										returningString += "\nUnknown parameter: " + editArgs[i];
 									}
 								}
-								return new string[] { returningString };
+								return new string[] { Environment.NewLine + returningString };
 							case "REMOVE":
 								if (addList.Count == 0)
 								{
@@ -282,7 +287,7 @@ namespace ItemSpawner
 									return new string[] { "Usage: ITEMSPAWNER SPAWNLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
 								}
 								// Here comes the fun part.
-								if (addList.Count == 0)
+								if (ItemsFileManager.spawnlist.Count == 0)
 								{
 									return new string[] { "There are no items in the SPAWNLIST." };
 								}
@@ -290,7 +295,7 @@ namespace ItemSpawner
 								{
 									return new string[] { "Please, enter a numerical ID." };
 								}
-								if (addList.Count < id)
+								if (ItemsFileManager.spawnlist.Count < id || id < 1)
 								{
 									return new string[] { "Please, enter a valid ID." };
 								}
@@ -363,8 +368,16 @@ namespace ItemSpawner
 									}
 								}
 								ItemsFileManager.UpdateSpawnInfo(spawnInfoRef, spawnInfo);
+								ItemsFileManager.spawnlist.Add(spawnInfo);
+								ItemsFileManager.spawnlist.Remove(spawnInfoRef);
+								ItemsFileManager.spawnlist = ItemsFileManager.spawnlist.OrderBy(x => x.line).ToList();
 								return new string[] { returningString };
 							case "REMOVE":
+								bool nonimplemented = true;
+								if (nonimplemented)
+								{
+									return new string[] { "Not implemented." };
+								}
 								if (ItemsFileManager.spawnlist.Count == 0)
 								{
 									return new string[] { "There are no items in the Spawnlist." };

@@ -15,7 +15,8 @@ namespace ItemSpawner
 		version = "2.0",
 		SmodMajor = 3,
 		SmodMinor = 4,
-		SmodRevision = 0
+		SmodRevision = 0,
+		configPrefix = "is"
 		)]
 	public class ItemSpawner : Plugin
 	{

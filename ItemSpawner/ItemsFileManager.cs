@@ -163,7 +163,7 @@ namespace ItemSpawner
 		}
 		public static string SpawnInfoToStr(SpawnInfo spawnInfo)
 		{
-			return spawnInfo.RoomType.ToString() + ':' + string.Join(",", spawnInfo.items.ToString()) + ':' + spawnInfo.probability +
+			return spawnInfo.RoomType.ToString() + ':' + ParseItems(spawnInfo.items) + ':' + spawnInfo.probability +
 						':' + spawnInfo.position.x.ToString(CultureInfo.InvariantCulture) +
 						',' + spawnInfo.position.y.ToString(CultureInfo.InvariantCulture) +
 						',' + spawnInfo.position.z.ToString(CultureInfo.InvariantCulture) +

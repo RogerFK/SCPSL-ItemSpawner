@@ -36,12 +36,12 @@ namespace ItemSpawner
 		[PipeMethod]
 		public static Vector GetRelativePosition(Room room, Vector position)
         {
-            return Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(position)));
+            return Vec3ToVector((room.GetGameObject() as GameObject).transform.InverseTransformPoint(VectorTo3(position)));
         }
 		[PipeMethod]
         public static Vector GetRelativeRotation(Room room, Vector rotation)
         {
-            return Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation)));
+            return Vec3ToVector((room.GetGameObject() as GameObject).transform.InverseTransformDirection(VectorTo3(rotation)));
         }
 		[PipeMethod]
         public static void SpawnItem(Room room, ItemType item, Vector vector, Vector rotation = null)
