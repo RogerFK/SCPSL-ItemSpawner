@@ -103,7 +103,6 @@ namespace ItemSpawner
 					}
 					Room muhRoom = Spawner.rooms.Where(x => x.RoomType.Equals(muhRoomType)).First();
 					int lines = FileManager.ReadAllLines("./items.txt").Count();
-					plugin.Info(spawnedCoins.Count.ToString());
 					foreach(PosVectorPair pair in spawnedCoins)
 					{
 						lines++;
@@ -411,7 +410,6 @@ namespace ItemSpawner
 				}
 				var scp049Component = ((GameObject)ev.Player.GetGameObject()).GetComponent<Scp049PlayerScript>();
 				var scp106Component = (ev.Player.GetGameObject() as GameObject).GetComponent<Scp106PlayerScript>();
-				plugin.Info(scp049Component.plyCam.transform.forward.ToString());
 				Vector3 plyRot = scp049Component.plyCam.transform.forward;
 				Physics.Raycast(scp049Component.plyCam.transform.position, plyRot, out RaycastHit where, 40f, scp106Component.teleportPlacementMask);
 				if (where.point.Equals(Vector3.zero))
@@ -423,7 +421,6 @@ namespace ItemSpawner
 					Vector rotation = new Vector(-plyRot.x, plyRot.y, -plyRot.z), position = Spawner.Vec3ToVector(where.point) + (Vector.Up * 0.1f);
 					PluginManager.Manager.Server.Map.SpawnItem(ItemType.COIN, position, rotation);
 					spawnedCoins.Add(new PosVectorPair(position, rotation));
-					plugin.Info(spawnedCoins.Count.ToString());
 					Room room = ClosestRoom(where.point);
 					ev.ReturnMessage = "Added " + where.point.ToString() + " to the list."
 						+ "\nYou're probably looking for the RoomType: " + room.RoomType.ToString();
