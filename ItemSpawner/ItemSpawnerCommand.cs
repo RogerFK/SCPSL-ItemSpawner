@@ -34,8 +34,8 @@ namespace ItemSpawner
 		{
 			return "\nYou can type ITEMSPAWNER HELP [COMMAND] for more info about one specific command. <> means it's mandatory, [] is optional\n" +
 				   "ITEMSPAWNER ADDCOINS <RoomType> - Adds the coin spawned through the newpos command to a list you can later modify, then removes them from the map\n" +
-				   "ITEMSPAWNER CLEARLIST - Deletes all coins that have been spawned through the newpos command\n" +
-				   "ITEMSPAWNER NEWLIST [EDIT/REMOVE/CONFIRM] - Displays the current list that will be added to the items.txt file\n" +
+				   "ITEMSPAWNER CLEARLIST - Removes all the spawned coins positions that haven't been added to the NEWLIST\n" +
+				   "ITEMSPAWNER NEWLIST [EDIT/REMOVE/CONFIRM] - Displays the current list that will be added to the items.txt file, which you can modify\n" +
 				   "ITEMSPAWNER SPAWNLIST [EDIT/REMOVE] - Displays or modifies the current spawnlist, so you can modify it\n" +
 				   "ITEMSPAWNER ROOMLIST - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, tho.";
 		}
@@ -68,7 +68,7 @@ namespace ItemSpawner
 								return new string[] { "ITEMSPAWNER ADDCOINS <RoomType> - Adds the coins to spawn relatively to a roomtype from the list in ITEMSPAWNER ROOMLIST to a new list in ITEMSPAWNER NEWLIST so you can modify them one by one," +
 									" then removes them from the map, and then you can use ITEMSPAWNER NEWLIST to modify their parameters (such as it's probability, etc.)." };
 							case "CLEARLIST":
-								return new string[] { "ITEMSPAWNER CLEARLIST - Deletes all coins that have been spawned through the newpos command" };
+								return new string[] { "ITEMSPAWNER CLEARLIST - Removes all the spawned points positions" };
 							case "NEWLIST":
 								return new string[] { "ITEMSPAWNER NEWLIST - Displays the current list that will get added when you do ITEMSPAWNER NEWLIST CONFIRM",
 									"ITEMSPAWNER NEWLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]- Edits the element with it's id when those arguments are passed.\nExample: ITEMSPAWNER NEWLIST EDIT 2 items=COIN,MEDKIT rotation=1,0,0 probability=12.5",
