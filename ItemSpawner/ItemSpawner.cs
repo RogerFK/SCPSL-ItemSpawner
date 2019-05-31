@@ -31,6 +31,12 @@ namespace ItemSpawner
 		}
 		[ConfigOption]
 		public string[] allowedranks = new string[] { "owner", "admin" };
+
+		[ConfigOption]
+		public bool enable = true;
+
+		[ConfigOption]
+		public bool verbose = true;
 		public override void Register()
 		{
 			AddEventHandlers(new ItemsFileManager(this), Priority.Low);

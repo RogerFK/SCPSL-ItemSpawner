@@ -59,7 +59,7 @@ namespace ItemSpawner
             /* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in vectorial calculus */
             PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector))),
             Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation))));
-            ploogin.Info("Spawned " + item.ToString() + " in: " + room.RoomType.ToString());
+            if(ploogin.verbose) ploogin.Info("Spawned " + item.ToString() + " in: " + room.RoomType.ToString());
         }
 		[PipeMethod] // according to Androx, piped methods don't allow overloads
 		public static void SpawnInRoomType(RoomType room, ItemType item, Vector vector, Vector rotation = null)

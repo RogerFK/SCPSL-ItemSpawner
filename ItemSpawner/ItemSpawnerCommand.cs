@@ -41,6 +41,10 @@ namespace ItemSpawner
 		}
 		public string[] OnCall(ICommandSender sender, string[] args)
 		{
+			if (!plugin.enable)
+			{
+				return new string[] { "This plugin is currently disabled." };
+			}
 			if (sender is Player p)
 			{
 				if (!plugin.allowedranks.Contains(p.GetUserGroup().Name))

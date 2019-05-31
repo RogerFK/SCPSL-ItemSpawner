@@ -18,19 +18,19 @@ namespace ItemSpawner
 		{
 			this.plugin = plugin;
 		}
-		private Vector VectorParser(string vectorData, int line)
+		private Vector VectorParser(string vectorData, int line = 0)
 		{
 			string[] vector = vectorData.Split(',');
 			if (vector.Length != 3)
 			{
-				plugin.Info("Bad format for a vector (" + vectorData + ") in line " + line);
+				plugin.Info("Bad format for a vector (" + vectorData + (line > 0 ? ") in line " + line : ""));
 				return null;
 			}
 			if	(	!float.TryParse(vector[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float x) 
 				||	!float.TryParse(vector[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float y) 
 				||	!float.TryParse(vector[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
 			{
-				plugin.Info("Error parsing vector: (" + vectorData + ") in line " + line);
+				plugin.Info("Error parsing vector: (" + vectorData + (line > 0 ? ") in line " + line : ""));
 				return null;
 			}
 			return new Vector(x, y, z);
@@ -38,6 +38,12 @@ namespace ItemSpawner
 		public static List<SpawnInfo> spawnlist = new List<SpawnInfo>();
 		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
 		{
+			if (!plugin.enable)
+			{
+				if(plugin.verbose)
+					plugin.Info("ItemSpawner is disabled: the list was not read");
+				return;
+			}
 			if (!FileManager.FileExists("./items.txt"))
 			{
 				plugin.Info("Created items.txt file with a microhid (or a coin) in the Intercom room and one at the Silo warhead as an example.");
@@ -77,33 +83,33 @@ namespace ItemSpawner
 						}
 						if (data.Length != 5)
 						{
-							plugin.Info("Error reading line " + currentLine);
+							plugin.Error("Error reading line " + currentLine);
 							continue;
 						}
 						if (!Enum.TryParse(data[0].Trim(), out RoomType room))
 						{
-							plugin.Info("Error using RoomType " + data[0] + " in line " + currentLine);
+							plugin.Error("Error using RoomType " + data[0] + " in line " + currentLine);
 							continue;
 						}
 						string[] itemData = data[1].Split(',');
 						List<ItemType> itemTypes = new List<ItemType>();
 						if (itemData.Length == 0)
 						{
-							plugin.Info("Error fetching ItemTypes " + data[1] + " in line " + currentLine);
+							plugin.Error("Error fetching ItemTypes " + data[1] + " in line " + currentLine);
 							continue;
 						}
 						foreach (string itemDataValue in itemData)
 						{
 							if (!Enum.TryParse(itemDataValue.Trim(), out ItemType itemType))
 							{
-								plugin.Info("Error using ItemType " + itemDataValue.Trim() + " in line " + currentLine);
+								plugin.Error("Error using ItemType " + itemDataValue.Trim() + " in line " + currentLine);
 								continue;
 							}
 							itemTypes.Add(itemType);
 						}
 						if (!float.TryParse(data[2].Trim(), out float probability))
 						{
-							plugin.Info("Error using probability " + data[2].Trim() + " in line " + currentLine);
+							plugin.Error("Error using probability " + data[2].Trim() + " in line " + currentLine);
 							continue;
 						}
 						Vector position = VectorParser(data[3].Trim(), currentLine);
