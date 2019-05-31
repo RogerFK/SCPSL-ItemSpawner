@@ -2,9 +2,11 @@
 
 # Usage
 
-You can choose to directly use the files, or you can use the commands below, in the commands section (if you're lazy, it's in (this)[https://www.youtube.com/watch?v=dQw4w9WgXcQ] link)
+You can choose to directly use the files, or you can use the commands below, in the commands section (if you're lazy, it's in [this](https://www.youtube.com/watch?v=dQw4w9WgXcQ) link)
+
 `items.txt` file format:
-`RoomType:ItemType1, ItemType2...:Probability:Vector:Rotation` where RoomType comes from this list: https://github.com/Grover-c13/Smod2/wiki/Enum-Lists#roomtype and ItemTypes from this: https://github.com/Grover-c13/Smod2/wiki/Enum-Lists#itemtype; probability takes a float number (75.48 for example); and both Vector and Rotation take things like `5,1.48,10:1,0,0`
+
+`RoomType:ItemType1, ItemType2...:Probability:Vector:Rotation` where RoomType comes from [this](https://github.com/Grover-c13/Smod2/wiki/Enum-Lists#roomtype) link and ItemTypes from [this](https://github.com/Grover-c13/Smod2/wiki/Enum-Lists#itemtype) link ; probability takes a float number (75.48 for example); and both Vector and Rotation take things like `5,1.48,10:1,0,0`
 
 # Commands
 
