@@ -153,7 +153,7 @@ namespace ItemSpawner
 		public static void DelSpawnInfo(SpawnInfo spawnInfo)
 		{
 			string oldStr = FileManager.ReadAllLines("./items.txt").ElementAt(spawnInfo.line);
-			FileManager.ReplaceLine(spawnInfo.line, "# Deleted SpawnInfo: " + oldStr, "./items.txt");
+			FileManager.ReplaceLine(spawnInfo.line - 1, "# Deleted SpawnInfo: " + oldStr, "./items.txt");
 			spawnlist.Remove(spawnInfo);
 		}
 		public static void UpdateSpawnInfo(SpawnInfo oldSpawnInfo, SpawnInfo newSpawnInfo)

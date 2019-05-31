@@ -32,10 +32,10 @@ namespace ItemSpawner
 
 		public string GetUsage()
 		{
-			return "You can type ITEMSPAWNER HELP [COMMAND] for more info about one specific command. <> means it's mandatory, [] is optional\n" +
+			return "\nYou can type ITEMSPAWNER HELP [COMMAND] for more info about one specific command. <> means it's mandatory, [] is optional\n" +
 				   "ITEMSPAWNER ADDCOINS <RoomType> - Adds the coin spawned through the newpos command to a list you can later modify, then removes them from the map\n" +
 				   "ITEMSPAWNER CLEARLIST - Deletes all coins that have been spawned through the newpos command\n" +
-				   "ITEMSPAWNER ADDLIST [EDIT/REMOVE/CONFIRM] - Displays the current list that will be added to the items.txt file\n" +
+				   "ITEMSPAWNER NEWLIST [EDIT/REMOVE/CONFIRM] - Displays the current list that will be added to the items.txt file\n" +
 				   "ITEMSPAWNER SPAWNLIST [EDIT/REMOVE] - Displays or modifies the current spawnlist, so you can modify it\n" +
 				   "ITEMSPAWNER ROOMLIST - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, tho.";
 		}
@@ -50,7 +50,7 @@ namespace ItemSpawner
 			}
 			if (args.Length == 0)
 			{
-				return new string[] { "Please, introduce a second argument", "<ADDCOINS/CLEARLIST/ADDLIST/SPAWNLIST/ROOMLIST>" };
+				return new string[] { "Please, introduce a second argument", "<ADDCOINS/CLEARLIST/NEWLIST/SPAWNLIST/ROOMLIST>" };
 			}
 			switch (args[0].ToUpper())
 			{
@@ -61,15 +61,15 @@ namespace ItemSpawner
 						switch (args[1].ToUpper())
 						{
 							case "ADDCOINS":
-								return new string[] { "ITEMSPAWNER ADDCOINS <RoomType> - Adds the coins to spawn relatively to a roomtype from the list in ITEMSPAWNER ROOMLIST to a new list in ITEMSPAWNER ADDLIST so you can modify them one by one," +
-									" then removes them from the map, and then you can use ITEMSPAWNER ADDLIST to modify their parameters (such as it's probability, etc.)." };
+								return new string[] { "ITEMSPAWNER ADDCOINS <RoomType> - Adds the coins to spawn relatively to a roomtype from the list in ITEMSPAWNER ROOMLIST to a new list in ITEMSPAWNER NEWLIST so you can modify them one by one," +
+									" then removes them from the map, and then you can use ITEMSPAWNER NEWLIST to modify their parameters (such as it's probability, etc.)." };
 							case "CLEARLIST":
 								return new string[] { "ITEMSPAWNER CLEARLIST - Deletes all coins that have been spawned through the newpos command" };
-							case "ADDLIST": // currently being developed
-								return new string[] { "ITEMSPAWNER ADDLIST - Displays the current list that will get added when you do ITEMSPAWNER ADDLIST CONFIRM",
-									"ITEMSPAWNER ADDLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]- Edits the element with it's id when those arguments are passed.\nExample: ITEMSPAWNER ADDLIST EDIT 2 items=COIN,MEDKIT rotation=1,0,0 probability=12.5",
-									"ITEMSPAWNER ADDLIST REMOVE <id> - Removes the element at the given id",
-									"ITEMSPAWNER ADDLIST CONFIRM - Saves the current list to items.txt" };
+							case "NEWLIST":
+								return new string[] { "ITEMSPAWNER NEWLIST - Displays the current list that will get added when you do ITEMSPAWNER NEWLIST CONFIRM",
+									"ITEMSPAWNER NEWLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]- Edits the element with it's id when those arguments are passed.\nExample: ITEMSPAWNER NEWLIST EDIT 2 items=COIN,MEDKIT rotation=1,0,0 probability=12.5",
+									"ITEMSPAWNER NEWLIST REMOVE <id> - Removes the element at the given id",
+									"ITEMSPAWNER NEWLIST CONFIRM - Saves the current list to items.txt" };
 							case "SPAWNLIST":
 								return new string[] { "ITEMSPAWNER SPAWNLIST - Displays the current spawnlist",
 									"ITEMSPAWNER SPAWNLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z] - Edits the element with it's id when those arguments are passed.\nExample: ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5",
@@ -106,8 +106,8 @@ namespace ItemSpawner
 						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativeRotation(muhRoom, pair.rotation)));
 					}
 					spawnedCoins.Clear();
-					return new string[] { "Added coins to the ADDLIST and cleared the list" };
-				case "ADDLIST":
+					return new string[] { "Added coins to the NEWLIST and cleared the list" };
+				case "NEWLIST":
 					if (args.Count() > 1)
 					{
 						#region Addlist Region
@@ -129,7 +129,7 @@ namespace ItemSpawner
 								// Here comes the fun part.
 								if (addList.Count == 0)
 								{
-									return new string[] { "There are no items in the ADDLIST." };
+									return new string[] { "There are no items in the NEWLIST." };
 								}
 								if (!int.TryParse(args[2], out int id))
 								{
@@ -215,7 +215,7 @@ namespace ItemSpawner
 							case "REMOVE":
 								if (addList.Count == 0)
 								{
-									return new string[] { "There are no items in the ADDLIST." };
+									return new string[] { "There are no items in the NEWLIST." };
 								}
 								if (args.Count() < 2)
 								{
@@ -238,19 +238,18 @@ namespace ItemSpawner
 					{
 						if(addList.Count == 0)
 						{
-							return new string[] { "There are no items in the ADDLIST." };
+							return new string[] { "There are no items in the NEWLIST." };
 						}
-						// RoomType:ItemType, ItemType2...:Probability:Vector:Rotation
 						string addListString = "List:\n";
 						int i = 0;
 						foreach (SpawnInfo spawnInfo in addList)
 						{
 							i++;
-							addListString += i + ". - " + spawnInfo.RoomType.ToString()
-								+ " - " + ItemsFileManager.ParseItems(spawnInfo.items)
-								+ " - " + spawnInfo.probability.ToString()
-								+ " - " + spawnInfo.position.ToString()
-								+ " - " + spawnInfo.rotation.ToString();
+							addListString += Environment.NewLine + i + ":\n - Roomtype:" + spawnInfo.RoomType.ToString()
+								+ "\n - Items: " + ItemsFileManager.ParseItems(spawnInfo.items)
+								+ "\n - Probability: " + spawnInfo.probability.ToString()
+								+ "\n - Position: " + spawnInfo.position.ToString()
+								+ "\n - Rotation: " + spawnInfo.rotation.ToString();
 						}
 						return new string[] { addListString };
 					}
@@ -271,11 +270,11 @@ namespace ItemSpawner
 						foreach (SpawnInfo spawnInfo in ItemsFileManager.spawnlist)
 						{
 							i++;
-							spawnlistString += i + ". - " + spawnInfo.RoomType.ToString()
-								+ " - " + ItemsFileManager.ParseItems(spawnInfo.items)
-								+ " - " + spawnInfo.probability.ToString()
-								+ " - " + spawnInfo.position.ToString()
-								+ " - " + spawnInfo.rotation.ToString();
+							spawnlistString += Environment.NewLine +  i + ":\n - Roomtype:" + spawnInfo.RoomType.ToString()
+								+ "\n - Items: " + ItemsFileManager.ParseItems(spawnInfo.items)
+								+ "\n - Probability: " + spawnInfo.probability.ToString()
+								+ "\n - Position: " + spawnInfo.position.ToString()
+								+ "\n - Rotation: " + spawnInfo.rotation.ToString();
 						}
 						return new string[] { spawnlistString }; 
 					}
@@ -371,7 +370,7 @@ namespace ItemSpawner
 								ItemsFileManager.spawnlist.Add(spawnInfo);
 								ItemsFileManager.spawnlist.Remove(spawnInfoRef);
 								ItemsFileManager.spawnlist = ItemsFileManager.spawnlist.OrderBy(x => x.line).ToList();
-								return new string[] { returningString };
+								return new string[] { Environment.NewLine + returningString };
 							case "REMOVE":
 								if (ItemsFileManager.spawnlist.Count == 0)
 								{
