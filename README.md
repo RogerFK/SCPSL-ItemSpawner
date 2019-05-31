@@ -22,6 +22,12 @@ The command to fetch a new position is `newpos`. I felt this was the best way be
  - **ITEMSPAWNER SPAWNLIST [EDIT/REMOVE]** - Displays or modifies the current spawnlist, so you can modify it
  - **ITEMSPAWNER ROOMLIST** - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, tho.
 
+# Configs
+| Config Option | Value Type | Default Value | Description |
+|:----------------:|:----------:|:-------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| is_enable | bool | true | Enables/disables this plugin completely |
+| is_allowedranks | Rank list | owner, admin | Who can use this plugin, you shouldn't really give this to mods, tbh, instead tell them to download this plugin and tell them to do it in their machines |
+
 # API for other plugins
 This plugin implements Smod2 Piping, which can be used following this guide: https://github.com/Grover-c13/Smod2/wiki/Piping
 
