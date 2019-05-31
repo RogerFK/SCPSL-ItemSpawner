@@ -14,7 +14,7 @@ You can choose to directly use the files, or you can use the commands below, in 
 The command to fetch a new position is `newpos`. I felt this was the best way because you can easily bind it to any key by doing `cmdbind <key> .newpos` so you can choose a bunch of spawnpoints easily. These get added to the "NEWLIST", which you can access via the R.A.
 
 ## Remote Admin Console
-*You can type `ITEMSPAWNER HELP [COMMAND]` for more info about one specific command. <> means it's mandatory, [] is optional
+*You can type `ITEMSPAWNER HELP [COMMAND]` for more info about one specific command. <> means it's mandatory, [] is optional*
 
  - **ITEMSPAWNER ADDCOINS <RoomType>** - Adds the coin spawned through the newpos command to a list you can later modify
  - **ITEMSPAWNER CLEARLIST** - Removes all the spawned coins positions that haven't been added to the NEWLIST
