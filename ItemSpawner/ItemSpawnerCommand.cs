@@ -94,7 +94,7 @@ namespace ItemSpawner
 					{
 						return new string[] { "Usage: ITEMSPAWNER ADDCOINS <RoomType> - Adds the coin spawned through the newpos command to a list you can later modify, then removes them from the map" };
 					}
-					if(!Enum.TryParse(args[1], out RoomType muhRoomType)){
+					if(!Enum.TryParse(args[1].ToUpper(), out RoomType muhRoomType)){
 						return new string[]{ "Introduce a valid RoomType." };
 					}
 					if(spawnedCoins.Count == 0)
