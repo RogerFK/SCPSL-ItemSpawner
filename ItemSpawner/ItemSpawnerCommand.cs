@@ -169,10 +169,11 @@ namespace ItemSpawner
 										{
 											returningString += "\nPlease, introduce valid items.";
 										}
-										spawnInfo.items = itemsToAdd.Take(j).ToArray();
-										addList.Add(spawnInfo);
-										addList = addList.OrderBy(x => x.line).ToList();
-										returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items);
+										else
+										{
+											spawnInfo.items = itemsToAdd.Take(j).ToArray();
+											returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items);
+										}
 									}
 									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
 									{
@@ -218,6 +219,8 @@ namespace ItemSpawner
 										returningString += "\nUnknown parameter: " + editArgs[i];
 									}
 								}
+								addList.Add(spawnInfo);
+								addList = addList.OrderBy(x => x.line).ToList();
 								return new string[] { Environment.NewLine + returningString };
 							case "REMOVE":
 								if (addList.Count == 0)
