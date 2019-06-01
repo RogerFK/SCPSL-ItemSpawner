@@ -102,7 +102,7 @@ namespace ItemSpawner
 						return new string[] { "Currently, the spawned coin list is empty" };
 					}
 					Room muhRoom = Spawner.rooms.Where(x => x.RoomType.Equals(muhRoomType)).First();
-					int lines = FileManager.ReadAllLines("./items.txt").Count();
+					int lines = FileManager.ReadAllLines("./items.txt").Count() - 1;
 					foreach(PosVectorPair pair in spawnedCoins)
 					{
 						lines++;
@@ -113,7 +113,7 @@ namespace ItemSpawner
 				case "NEWLIST":
 					if (args.Count() > 1)
 					{
-						#region Addlist Region
+						#region Newlist Region
 						switch (args[1].ToUpper())
 						{
 							case "CONFIRM":
@@ -141,6 +141,10 @@ namespace ItemSpawner
 								if (addList.Count < id || id < 1)
 								{
 									return new string[] { "Please, enter a valid ID." };
+								}
+								if(args.Count() < 4)
+								{
+									return new string[] { "Please, introduce another argument." };
 								}
 								SpawnInfo spawnInfo = addList.ElementAt(id - 1);
 								addList.RemoveAt(id - 1);
@@ -301,6 +305,10 @@ namespace ItemSpawner
 								{
 									return new string[] { "Please, enter a valid ID." };
 								}
+								if (args.Count() < 4)
+								{
+									return new string[] { "Please, introduce another argument." };
+								}
 								SpawnInfo spawnInfoRef = ItemsFileManager.spawnlist.ElementAt(id - 1);
 								SpawnInfo spawnInfo = new SpawnInfo(spawnInfoRef.RoomType, spawnInfoRef.line, spawnInfoRef.items, spawnInfoRef.probability, spawnInfoRef.position, spawnInfoRef.rotation);
 								string returningString = "Item with ID " + args[2];
@@ -311,18 +319,20 @@ namespace ItemSpawner
 									{
 										string[] probablyItems = editArgs[i].Substring(6).Split(',');
 										ItemType[] itemsToAdd = new ItemType[probablyItems.Count()];
+										int j = 0;
 										foreach (string item in probablyItems)
 										{
 											if (Enum.TryParse(item, out ItemType itemType))
 											{
-												itemsToAdd.Append(itemType);
+												itemsToAdd[j] = itemType;
+												j++;
 											}
 										}
-										if (itemsToAdd.Count() == 0)
+										if (j == 0)
 										{
 											returningString += "\nPlease, introduce valid items.";
 										}
-										spawnInfo.items = itemsToAdd;
+										spawnInfo.items = itemsToAdd.Take(j).ToArray();
 										returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items);
 									}
 									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
