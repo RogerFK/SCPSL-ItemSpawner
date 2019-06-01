@@ -1,5 +1,9 @@
 # SMOD2-ItemSpawner
 
+# Latest release
+
+To get the latest release, head over to https://github.com/RogerFK/SMOD2-ItemSpawner/releases/latest.
+
 # Usage
 
 You can choose to directly use the files, or you can use the commands below, in the commands section (if you're lazy, it's in [this](https://www.youtube.com/watch?v=dQw4w9WgXcQ) link)
