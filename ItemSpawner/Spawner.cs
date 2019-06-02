@@ -92,9 +92,15 @@ namespace ItemSpawner
 				return obj.RoomType.GetHashCode();
 			}
 		}
+		// This thing below fetches the rooms each different round
 		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
 		{
-			rooms = ev.Server.Map.Get079InteractionRooms(Scp079InteractionType.CAMERA).Distinct(new DistinctRoomComparer()).ToList();
+			rooms = ev.Server.
+				Map
+				.Get079InteractionRooms(Scp079InteractionType.SPEAKER) // So it uses the SPEAKER one first, as it appears it works better
+				.Concat(PluginManager.Manager.Server.Map.Get079InteractionRooms(Scp079InteractionType.CAMERA)) // So the remaining ones get the CAMERA ones which appear to have no issue
+				.Distinct(new DistinctRoomComparer()) // So you don't ever get two spawns in the same place
+				.ToList(); // So you don't have to iterate over an IEnumerable over and over, which works way worse that if it wasn't a list
 		}
 	}
 }
