@@ -37,6 +37,10 @@ namespace ItemSpawner
 
 		[ConfigOption]
 		public bool verbose = true;
+
+		[ConfigOption]
+		public bool useGlobalItems = true;
+
 		public override void Register()
 		{
 			AddEventHandlers(new ItemsFileManager(this), Priority.Low);

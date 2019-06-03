@@ -44,13 +44,20 @@ namespace ItemSpawner
 					plugin.Info("ItemSpawner is disabled: the list was not read");
 				return;
 			}
-			if (!FileManager.FileExists("./items.txt"))
+			string[] items;
+			if (plugin.useGlobalItems)
 			{
-				plugin.Info("Created items.txt file with a microhid (or a coin) in the Intercom room and one at the Silo warhead as an example.");
-				File.WriteAllText("./items.txt", "NUKE:MICROHID:100:-0.05,402.46,3.52:1,0,0\nINTERCOM:MICROHID,COIN:100:-9.212725,-6.839905,-3.935197:0.5,0,0");
+				if (!FileManager.FileExists("./items.txt"))
+				{
+					plugin.Info("Created items.txt file with a microhid (or a coin) in the Intercom room and one at the Silo warhead as an example.");
+					File.WriteAllText("./items.txt", "NUKE:MICROHID:100:-0.05,402.46,3.52:1,0,0\nINTERCOM:MICROHID,COIN:100:-9.212725,-6.839905,-3.935197:0.5,0,0");
+				}
+				items = FileManager.ReadAllLines("./items.txt");
 			}
-			spawnlist.Clear(); //Reload the spawnlist
-			string[] items = FileManager.ReadAllLines("./items.txt");
+			else
+			{
+				items = FileManager.ReadAllLines(FileManager.GetAppFolder() + ("items.txt"));
+			}
 			if (items.Length < 0)
 			{
 				plugin.Error("Your 'items.txt' file is completely blank.");
@@ -59,6 +66,7 @@ namespace ItemSpawner
 			else
 			{
 				int currentLine = -1;
+				spawnlist.Clear(); //Reload the spawnlist
 				foreach (string item in items)
 				{
 					currentLine++;
