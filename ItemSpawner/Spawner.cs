@@ -69,12 +69,19 @@ namespace ItemSpawner
 				rotation = Vector.Zero;
 			}
 
+			if(vector == null)
+			{
+				ploogin.Info("You gave one null vector inside a SpawnInRoomType method, somewhere");
+				return;
+			}
+
 			foreach (Room r in rooms)
 			{
 				if (r.RoomType == room)
 				{
 					PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector((r.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector))),
 					Vec3ToVector((r.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation))));
+					if (ploogin.verbose) ploogin.Info("Spawned " + item.ToString() + " in: " + room.ToString());
 					break;
 				}
 			}
