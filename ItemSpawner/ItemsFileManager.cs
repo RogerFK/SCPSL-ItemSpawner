@@ -153,7 +153,7 @@ namespace ItemSpawner
 					{
 						if (rand.Next(0, 10000) <= spawn.probability * 100)
 						{
-							Spawner.SpawnItem(room, spawn.items[rand.Next(0, spawn.items.Length - 1)], spawn.position, spawn.rotation);
+							Spawner.SpawnItem(room, spawn.items[rand.Next(0, spawn.items.Length)], spawn.position, spawn.rotation);
 						}
 					}
 				}
