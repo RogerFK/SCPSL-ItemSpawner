@@ -32,6 +32,7 @@ The command to fetch a new position is `newpos`. I felt this was the best way be
 | is_enable | bool | true | Enables/disables this plugin completely |
 | is_allowedranks | Rank list | owner, admin | Who can use this plugin, you shouldn't really give this to mods, tbh, instead tell them to download this plugin and tell them to do it in their machines |
 | is_verbose | bool | true | Prints info in the console about spawned stuff and some other stuff |
+| is_use_global_items | bool | true | Reads from items.txt globally or in a per-server basis (or using the items.txt inside the appdata folder if you're hosting one server) |
 
 # API for other plugins
 This plugin implements Smod2 Piping, which can be used following this guide: https://github.com/Grover-c13/Smod2/wiki/Piping
