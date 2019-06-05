@@ -49,13 +49,18 @@ namespace ItemSpawner
 			{
 				if (!FileManager.FileExists("./items.txt"))
 				{
-					plugin.Info("Created items.txt file with a microhid (or a coin) in the Intercom room and one at the Silo warhead as an example.");
+					plugin.Info("Created items.txt file with a MTF_LIEUTENANT_KEYCARD (or a coin) in the Intercom room and one MICROHID at the Silo warhead as an example in the global directory.");
 					File.WriteAllText("./items.txt", "NUKE:MICROHID:100:-0.05,402.46,3.52:1,0,0\nINTERCOM:MICROHID,COIN:100:-9.212725,-6.839905,-3.935197:0.5,0,0");
 				}
 				items = FileManager.ReadAllLines("./items.txt");
 			}
 			else
 			{
+				if (!FileManager.FileExists(FileManager.GetAppFolder() + ("items.txt")))
+				{
+					plugin.Info("Created items.txt file with a MTF_LIEUTENANT_KEYCARD (or a coin) in the Intercom room and one MICROHID at the Silo warhead as an example in the server directory or in the Appdata folder.");
+					File.WriteAllText(FileManager.GetAppFolder() + ("items.txt"), "NUKE:MICROHID:100:-0.05,402.46,3.52:1,0,0\nINTERCOM:MTF_LIEUTENANT_KEYCARD,COIN:100:-9.212725,-6.839905,-3.935197:0.5,0,0");
+				}
 				items = FileManager.ReadAllLines(FileManager.GetAppFolder() + ("items.txt"));
 			}
 			if (items.Length < 0)
