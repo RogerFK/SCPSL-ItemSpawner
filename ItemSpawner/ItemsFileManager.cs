@@ -14,7 +14,7 @@ namespace ItemSpawner
 	{
 		private readonly ItemSpawnerPlugin plugin;
 		private readonly Random rand = new Random();
-		private bool ImBool { get; set; }
+		public static bool ImBool { get; set; }
 		public ItemsFileManager(ItemSpawnerPlugin plugin)
 		{
 			this.plugin = plugin;
@@ -27,9 +27,9 @@ namespace ItemSpawner
 				plugin.Info("Bad format for a vector (" + vectorData + (line > 0 ? ") in line " + line : ""));
 				return null;
 			}
-			if	(	!float.TryParse(vector[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float x) 
-				||	!float.TryParse(vector[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float y) 
-				||	!float.TryParse(vector[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
+			if (!float.TryParse(vector[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float x)
+				|| !float.TryParse(vector[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float y)
+				|| !float.TryParse(vector[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
 			{
 				plugin.Info("Error parsing vector: (" + vectorData + (line > 0 ? ") in line " + line : ""));
 				return null;
@@ -41,12 +41,12 @@ namespace ItemSpawner
 		{
 			if (!plugin.enable)
 			{
-				if(plugin.verbose)
+				if (plugin.verbose)
 					plugin.Info("ItemSpawner is disabled: the list was not read");
 				return;
 			}
 			string[] items;
-			
+
 			if (plugin.useGlobalItems)
 			{
 				if (!FileManager.FileExists("./items.txt"))
@@ -123,7 +123,7 @@ namespace ItemSpawner
 							{
 								if (itemDataValue.StartsWith("IM:"))
 								{
-									if(int.TryParse(itemDataValue.Substring(3), out int customItem))
+									if (int.TryParse(itemDataValue.Substring(3), out int customItem))
 									{
 										if (ItemManager.Items.Handlers.ContainsKey(customItem))
 										{
@@ -182,7 +182,7 @@ namespace ItemSpawner
 							if (!ImBool && spawn.CustomItems != null)
 							{
 								int itemInt = rand.Next(0, spawn.items.Length + spawn.CustomItems.Length);
-								if(itemInt < spawn.items.Length)
+								if (itemInt < spawn.items.Length)
 								{
 									Spawner.SpawnItem(room, spawn.items[itemInt], spawn.position, spawn.rotation);
 								}
@@ -197,13 +197,17 @@ namespace ItemSpawner
 				}
 			}
 		}
-		public static string ParseItems(ItemType[] items)
+		public static string ParseItems(ItemType[] items, int[] customItems)
 		{
-			int i, size = items.Count();
+			int i, size1 = items.Length, size2 = customItems.Length;
 			string parsedValue = string.Empty;
-			for (i = 0; i < size; i++)
+			for (i = 0; i < size1; i++)
 			{
-				parsedValue += items[i] + (i != size-1 ? ", " : string.Empty);
+				parsedValue += items[i] + (i != size1 + size2 - 1 ? ", " : string.Empty);
+			}
+			for (i = 0; i < size2; i++)
+			{
+				parsedValue += "IM:" + customItems[i] + (i != size2 - 1 ? ", " : string.Empty);
 			}
 			return parsedValue;
 		}
@@ -220,7 +224,7 @@ namespace ItemSpawner
 		}
 		public static string SpawnInfoToStr(SpawnInfo spawnInfo)
 		{
-			return spawnInfo.RoomType.ToString() + ':' + ParseItems(spawnInfo.items) + ':' + spawnInfo.probability +
+			return spawnInfo.RoomType.ToString() + ':' + ParseItems(spawnInfo.items, spawnInfo.CustomItems) + ':' + spawnInfo.probability +
 						':' + spawnInfo.position.x.ToString(CultureInfo.InvariantCulture) +
 						',' + spawnInfo.position.y.ToString(CultureInfo.InvariantCulture) +
 						',' + spawnInfo.position.z.ToString(CultureInfo.InvariantCulture) +
