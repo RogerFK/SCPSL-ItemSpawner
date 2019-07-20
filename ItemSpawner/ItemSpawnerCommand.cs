@@ -15,12 +15,12 @@ namespace ItemSpawner
 {
 	class ItemSpawnerCommand : ICommandHandler, IEventHandlerCallCommand
 	{
-		private readonly ItemSpawner plugin;
+		private readonly ItemSpawnerPlugin plugin;
 
 		private static List<PosVectorPair> spawnedCoins = new List<PosVectorPair>(50);
 
 		private static List<SpawnInfo> addList = new List<SpawnInfo>(50);
-		public ItemSpawnerCommand(ItemSpawner plugin)
+		public ItemSpawnerCommand(ItemSpawnerPlugin plugin)
 		{
 			this.plugin = plugin;
 		}
@@ -106,7 +106,7 @@ namespace ItemSpawner
 					foreach(PosVectorPair pair in spawnedCoins)
 					{
 						lines++;
-						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativeRotation(muhRoom, pair.rotation)));
+						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, new int[] { 0 }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativeRotation(muhRoom, pair.rotation)));
 					}
 					spawnedCoins.Clear();
 					return new string[] { "Added coins to the NEWLIST and cleared the list" };
@@ -227,7 +227,7 @@ namespace ItemSpawner
 								{
 									return new string[] { "There are no items in the NEWLIST." };
 								}
-								if (args.Count() < 2)
+								if (args.Count() < 3)
 								{
 									return new string[] { "Usage: ITEMSPAWNER REMOVE <id>" };
 								}
@@ -313,7 +313,7 @@ namespace ItemSpawner
 									return new string[] { "Please, introduce another argument." };
 								}
 								SpawnInfo spawnInfoRef = ItemsFileManager.spawnlist.ElementAt(id - 1);
-								SpawnInfo spawnInfo = new SpawnInfo(spawnInfoRef.RoomType, spawnInfoRef.line, spawnInfoRef.items, spawnInfoRef.probability, spawnInfoRef.position, spawnInfoRef.rotation);
+								SpawnInfo spawnInfo = new SpawnInfo(spawnInfoRef.RoomType, spawnInfoRef.line, spawnInfoRef.items, spawnInfoRef.CustomItems, spawnInfoRef.probability, spawnInfoRef.position, spawnInfoRef.rotation);
 								string returningString = "Item with ID " + args[2];
 								string[] editArgs = args.Skip(3).ToArray();
 								for (int i = 0; i < editArgs.Count(); i++)

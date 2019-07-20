@@ -1,6 +1,7 @@
 ﻿/* Find an updated version of this class inside: https://github.com/RogerFK/SMOD2-ItemSpawner */
 // Inspired by old Androx's Timing.cs class
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,9 +16,9 @@ namespace ItemSpawner
 {
 	internal class Spawner : IEventHandlerWaitingForPlayers
 	{
-		private static ItemSpawner ploogin;
+		private static ItemSpawnerPlugin ploogin;
 
-		public static void Init(ItemSpawner plugin, Priority priority = Priority.Highest)
+		public static void Init(ItemSpawnerPlugin plugin, Priority priority = Priority.Highest)
 		{
 			ploogin = plugin;
 			plugin.AddEventHandlers(new Spawner(), priority);
@@ -60,6 +61,25 @@ namespace ItemSpawner
 			PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector))),
 			Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation))));
 			if (ploogin.verbose) ploogin.Info("Spawned " + item.ToString() + " in: " + room.RoomType.ToString());
+		}
+		[PipeMethod]
+		public static void SpawnCustomItem(Room room, int id, Vector vector, Vector rotation = null)
+		{
+			if (rotation == null)
+			{
+				rotation = Vector.Zero;
+			}
+
+			if (vector == null)
+			{
+				ploogin.Info("You gave one null vector, somewhere");
+				return;
+			}
+			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in vectorial calculus */
+			var rotationConv = (room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation));
+			ItemManager.Items.Handlers[id].Create((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector)), Quaternion.Euler(rotationConv.x, rotationConv.y, rotationConv.z));
+			
+			if (ploogin.verbose) ploogin.Info("Spawned IM:" + id.ToString() + " in: " + room.RoomType.ToString());
 		}
 		[PipeMethod] // according to Androx, piped methods don't allow overloads
 		public static void SpawnInRoomType(RoomType room, ItemType item, Vector vector, Vector rotation = null)

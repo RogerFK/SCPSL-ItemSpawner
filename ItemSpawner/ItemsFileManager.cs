@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Smod2;
 using Smod2.API;
 using Smod2.EventHandlers;
 using Smod2.Events;
@@ -11,10 +12,10 @@ namespace ItemSpawner
 {
 	public class ItemsFileManager : IEventHandlerWaitingForPlayers
 	{
-		private readonly ItemSpawner plugin;
+		private readonly ItemSpawnerPlugin plugin;
 		private readonly Random rand = new Random();
-
-		public ItemsFileManager(ItemSpawner plugin)
+		private bool ImBool { get; set; }
+		public ItemsFileManager(ItemSpawnerPlugin plugin)
 		{
 			this.plugin = plugin;
 		}
@@ -45,6 +46,7 @@ namespace ItemSpawner
 				return;
 			}
 			string[] items;
+			
 			if (plugin.useGlobalItems)
 			{
 				if (!FileManager.FileExists("./items.txt"))
@@ -63,6 +65,7 @@ namespace ItemSpawner
 				}
 				items = FileManager.ReadAllLines(FileManager.GetAppFolder() + ("items.txt"));
 			}
+			ImBool = PluginManager.Manager.EnabledPlugins.Where(x => x.Details.id == "4aiur.custom.itemmanager").Count() > 0;
 			if (items.Length < 0)
 			{
 				plugin.Error("Your 'items.txt' file is completely blank.");
@@ -71,7 +74,7 @@ namespace ItemSpawner
 			else
 			{
 				int currentLine = -1;
-				spawnlist.Clear(); //Reload the spawnlist
+				spawnlist.Clear(); // Reload the spawnlist
 				foreach (string item in items)
 				{
 					currentLine++;
@@ -106,19 +109,42 @@ namespace ItemSpawner
 						}
 						string[] itemData = data[1].Split(',');
 						List<ItemType> itemTypes = new List<ItemType>();
+						List<int> CustomItems = null;
+						if (ImBool) CustomItems = new List<int>();
 						if (itemData.Length == 0)
 						{
 							plugin.Error("Error fetching ItemTypes " + data[1] + " in line " + currentLine);
 							continue;
 						}
-						foreach (string itemDataValue in itemData)
+						foreach (string itemDataUntrimmed in itemData)
 						{
-							if (!Enum.TryParse(itemDataValue.Trim(), out ItemType itemType))
+							string itemDataValue = itemDataUntrimmed.Trim();
+							if (ImBool)
+							{
+								if (itemDataValue.StartsWith("IM:"))
+								{
+									if(int.TryParse(itemDataValue.Substring(3), out int customItem))
+									{
+										if (ItemManager.Items.Handlers.ContainsKey(customItem))
+										{
+											CustomItems.Add(customItem);
+										}
+										else
+										{
+											plugin.Error("Custom item with ID " + customItem + " not installed/not found!");
+										}
+									}
+									else
+									{
+										plugin.Error("\"ID\" " + itemDataValue.Substring(3) + " isn't a valid ID for ItemManager!");
+									}
+								}
+							}
+							else if (!Enum.TryParse(itemDataValue.Trim(), out ItemType itemType))
 							{
 								plugin.Error("Error using ItemType " + itemDataValue.Trim() + " in line " + currentLine);
-								continue;
 							}
-							itemTypes.Add(itemType);
+							else itemTypes.Add(itemType);
 						}
 						if (!float.TryParse(data[2].Trim(), out float probability))
 						{
@@ -137,7 +163,7 @@ namespace ItemSpawner
 						}
 
 						// If it worked until here means everything went to plan uwu
-						spawnlist.Add(new SpawnInfo(room, currentLine, itemTypes.ToArray(), probability, position, rotation));
+						spawnlist.Add(new SpawnInfo(room, currentLine, itemTypes.ToArray(), CustomItems.ToArray(), probability, position, rotation));
 					}
 					catch (Exception e)
 					{
@@ -153,7 +179,19 @@ namespace ItemSpawner
 					{
 						if (rand.Next(0, 10000) <= spawn.probability * 100)
 						{
-							Spawner.SpawnItem(room, spawn.items[rand.Next(0, spawn.items.Length)], spawn.position, spawn.rotation);
+							if (!ImBool && spawn.CustomItems != null)
+							{
+								int itemInt = rand.Next(0, spawn.items.Length + spawn.CustomItems.Length);
+								if(itemInt < spawn.items.Length)
+								{
+									Spawner.SpawnItem(room, spawn.items[itemInt], spawn.position, spawn.rotation);
+								}
+								else
+								{
+									Spawner.SpawnCustomItem(room, spawn.CustomItems[itemInt - spawn.items.Length], spawn.position, spawn.rotation);
+								}
+							}
+							else Spawner.SpawnItem(room, spawn.items[rand.Next(0, spawn.items.Length)], spawn.position, spawn.rotation);
 						}
 					}
 				}

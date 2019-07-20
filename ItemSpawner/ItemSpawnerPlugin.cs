@@ -18,7 +18,7 @@ namespace ItemSpawner
 		SmodRevision = 0,
 		configPrefix = "is"
 		)]
-	public class ItemSpawner : Plugin
+	public class ItemSpawnerPlugin : Plugin
 	{
 		public override void OnDisable()
 		{
@@ -46,7 +46,7 @@ namespace ItemSpawner
 			AddEventHandlers(new ItemsFileManager(this), Priority.Low);
 			AddEventHandlers(new ItemSpawnerCommand(this), Priority.Low);
 			Spawner.Init(this);
-			AddCommand("itemspawner", new ItemSpawnerCommand(this));
+			AddCommands(new string[] { "itemspawner", "is", "items", "its" }, new ItemSpawnerCommand(this));
 		}
 	}
 	public struct SpawnInfo
@@ -55,14 +55,16 @@ namespace ItemSpawner
 		public readonly int line; // This saves the line to later modify it
 
 		public ItemType[] items;
+		public int[] CustomItems;
 		public float probability;
 		public Vector position;
 		public Vector rotation;
 
-		public SpawnInfo(RoomType roomType, int line, ItemType[] itemType, float probability, Vector position, Vector rotation)
+		public SpawnInfo(RoomType roomType, int line, ItemType[] itemType, int[] CustomItems, float probability, Vector position, Vector rotation)
 		{
 			RoomType = roomType;
 			items = itemType;
+			this.CustomItems = CustomItems;
 			this.probability = probability;
 			this.line = line;
 			this.position = position;
