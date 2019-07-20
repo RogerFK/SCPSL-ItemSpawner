@@ -32,12 +32,12 @@ namespace ItemSpawner
 
 		public string GetUsage()
 		{
-			return "\nYou can type ITEMSPAWNER/ITEMS/ITS HELP [COMMAND] for more info about one specific command. <> means it's mandatory, [] is optional\n" +
-				   "ITEMSPAWNER +/AC/ADDC/ADDCOINS <RoomType> - Adds the coin spawned through the newpos command to a list you can later modify, then removes them from the map\n" +
-				   "ITEMSPAWNER CL/REML/REMOVELIST/CLEARLIST - Removes all the spawned coins positions that haven't been added to the NEWLIST\n" +
+			return "\nYou can type ITEMSPAWNER/ITEMS/ITS/IS HELP [COMMAND] for more info about one specific command. <> means it's mandatory, [] is optional\n" +
+				   "ITEMSPAWNER +/AC/ADDC/ADDCOINS <RoomType> - Adds the coin positions in relation to the ROOMTYPE you typed. It then removes those coins to be taken into account when doing IS + again\n" +
+				   "ITEMSPAWNER CL/REML/REMOVELIST/CLEARLIST - Removes all the spawned coins positions that haven't been added to the NEWLIST, useful if you spawned 300 coins somewhere but don't wanna use those positions\n" +
 				   "ITEMSPAWNER NL/NEW/NLIST/NEWLIST [EDIT/REMOVE/CONFIRM] - Displays the current list that will be added to the items.txt file, which you can modify\n" +
 				   "ITEMSPAWNER SL/SPL/SPAWNS/SPAWNLIST [EDIT/REMOVE] - Displays or modifies the current spawnlist, so you can modify it\n" +
-				   "ITEMSPAWNER RL/ROOMS/ROOMLIST - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, tho.";
+				   "ITEMSPAWNER RL/ROOMS/ROOMLIST - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, so don't count on that.";
 		}
 		public string[] OnCall(ICommandSender sender, string[] args)
 		{
@@ -69,12 +69,12 @@ namespace ItemSpawner
 							case "ADDC":
 							case "ADDCOINS":
 								return new string[] { "ITS +/AC/ADDC/ADDCOINS <RoomType> - Adds the coins to spawn relatively to a roomtype from the list in ITEMSPAWNER ROOMLIST to a new list in ITEMSPAWNER NEWLIST so you can modify them one by one," +
-									" then removes them from the map, and then you can use ITEMSPAWNER NEWLIST to modify their parameters (such as it's probability, etc.)." };
+									" then removes that coin position from the current list, and then you can use ITEMSPAWNER NEWLIST to modify their parameters (such as it's probability, etc.)." };
 							case "CL":
 							case "REML":
 							case "REMOVELIST":
 							case "CLEARLIST":
-								return new string[] { "ITS CL/REML/REMOVELIST/CLEARLIST - Removes all the spawned points positions" };
+								return new string[] { "ITS CL/REML/REMOVELIST/CLEARLIST - Removes all the spawned coins positions" };
 							case "NL":
 							case "NEW":
 							case "NLIST":
