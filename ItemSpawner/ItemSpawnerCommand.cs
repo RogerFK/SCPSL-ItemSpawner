@@ -189,6 +189,7 @@ namespace ItemSpawner
 										int j = 0, z = 0;
 										foreach (string item in probablyItems)
 										{
+											string itemDataValue = item.Trim();
 											if (ItemsFileManager.ImBool && item.StartsWith("IM:"))
 											{
 												if (int.TryParse(itemDataValue.Substring(3), out int customItem))
@@ -222,7 +223,7 @@ namespace ItemSpawner
 										{
 											spawnInfo.items = itemsToAdd.Take(j).ToArray();
 											spawnInfo.CustomItems = customItemsToAdd.Take(z).ToArray();
-											returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items);
+											returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items, spawnInfo.CustomItems);
 										}
 									}
 									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
@@ -309,7 +310,7 @@ namespace ItemSpawner
 						{
 							i++;
 							addListString += Environment.NewLine + i + ":\n - Roomtype:" + spawnInfo.RoomType.ToString()
-								+ "\n - Items: " + ItemsFileManager.ParseItems(spawnInfo.items)
+								+ "\n - Items: " + ItemsFileManager.ParseItems(spawnInfo.items, spawnInfo.CustomItems)
 								+ "\n - Probability: " + spawnInfo.probability.ToString()
 								+ "\n - Position: " + spawnInfo.position.ToString()
 								+ "\n - Rotation: " + spawnInfo.rotation.ToString();
@@ -339,7 +340,7 @@ namespace ItemSpawner
 						{
 							i++;
 							spawnlistString += Environment.NewLine +  i + ":\n - Roomtype:" + spawnInfo.RoomType.ToString()
-								+ "\n - Items: " + ItemsFileManager.ParseItems(spawnInfo.items)
+								+ "\n - Items: " + ItemsFileManager.ParseItems(spawnInfo.items, spawnInfo.CustomItems)
 								+ "\n - Probability: " + spawnInfo.probability.ToString()
 								+ "\n - Position: " + spawnInfo.position.ToString()
 								+ "\n - Rotation: " + spawnInfo.rotation.ToString();
@@ -387,6 +388,7 @@ namespace ItemSpawner
 										int j = 0, z = 0;
 										foreach (string item in probablyItems)
 										{
+											string itemDataValue = item.Trim();
 											if (ItemsFileManager.ImBool && item.StartsWith("IM:"))
 											{
 												if (int.TryParse(itemDataValue.Substring(3), out int customItem))
@@ -418,7 +420,7 @@ namespace ItemSpawner
 										}
 										spawnInfo.items = itemsToAdd.Take(j).ToArray();
 										spawnInfo.CustomItems = customItemsToAdd.Take(z).ToArray();
-										returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items);
+										returningString += "\nModified to use items " + ItemsFileManager.ParseItems(spawnInfo.items, spawnInfo.CustomItems);
 									}
 									else if (editArgs[i].ToUpper().StartsWith("PROBABILITY="))
 									{

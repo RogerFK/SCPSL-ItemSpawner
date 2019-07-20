@@ -199,7 +199,15 @@ namespace ItemSpawner
 		}
 		public static string ParseItems(ItemType[] items, int[] customItems)
 		{
-			int i, size1 = items.Length, size2 = customItems.Length;
+			int i, size1 = 0, size2 = 0;
+			if(items != null)
+			{
+				size1 = items.Length;
+			}
+			if(customItems != null)
+			{
+				size2 = customItems.Length;
+			}
 			string parsedValue = string.Empty;
 			for (i = 0; i < size1; i++)
 			{
