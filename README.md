@@ -22,11 +22,11 @@ The command to fetch a new position is `newpos`. I felt this was the best way be
 ## Remote Admin Console
 *You can type `ITEMSPAWNER HELP [COMMAND]` for more info about one specific command, or just the command without any other argument. <> means it's mandatory, [] is optional*
 
- - **ITEMSPAWNER ADDCOINS <RoomType>** - Adds the coin spawned through the newpos command to a list you can later modify
- - **ITEMSPAWNER CLEARLIST** - Removes all the spawned coins positions that haven't been added to the NEWLIST
- - **ITEMSPAWNER NEWLIST [EDIT/REMOVE/CONFIRM]** - Displays the current list that will be added to the items.txt file, which you can modify
- - **ITEMSPAWNER SPAWNLIST [EDIT/REMOVE]** - Displays or modifies the current spawnlist, so you can modify it
- - **ITEMSPAWNER ROOMLIST** - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, tho.
+ - `ITEMSPAWNER ADDCOINS <RoomType>` - Adds the coin spawned through the newpos command to a list you can later modify
+ - `ITEMSPAWNER CLEARLIST` - Removes all the spawned coins positions that haven't been added to the NEWLIST
+ - `ITEMSPAWNER NEWLIST [EDIT/REMOVE/CONFIRM] <ID> <Parameters>` - Displays the current list that will be added to the items.txt file, which you can modify
+ - `ITEMSPAWNER SPAWNLIST [EDIT/REMOVE]` - Displays or modifies the current spawnlist, so you can modify it
+ - `ITEMSPAWNER ROOMLIST` - Displays every RoomType in the game. Non-unique rooms like hallways will probably not work, tho.
 
 # Configs
 | Config Option | Value Type | Default Value | Description |
