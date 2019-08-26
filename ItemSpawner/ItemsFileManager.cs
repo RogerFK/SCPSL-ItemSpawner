@@ -10,11 +10,11 @@ using Smod2.Events;
 
 namespace ItemSpawner
 {
-	public class ItemsFileManager : IEventHandlerWaitingForPlayers
+	public class ItemsFileManager : IEventHandlerWaitingForPlayers, IEventHandlerRoundStart
 	{
 		private readonly ItemSpawnerPlugin plugin;
 		private readonly Random rand = new Random();
-		public static bool ImBool { get; set; }
+		private Queue<CusItemInfo> CIQueue = new Queue<CusItemInfo>();
 		public ItemsFileManager(ItemSpawnerPlugin plugin)
 		{
 			this.plugin = plugin;
@@ -65,7 +65,6 @@ namespace ItemSpawner
 				}
 				items = FileManager.ReadAllLines(FileManager.GetAppFolder() + ("items.txt"));
 			}
-			ImBool = PluginManager.Manager.EnabledPlugins.Where(x => x.Details.id == "4aiur.custom.itemmanager").Count() > 0;
 			if (items.Length < 0)
 			{
 				plugin.Error("Your 'items.txt' file is completely blank.");
@@ -99,18 +98,17 @@ namespace ItemSpawner
 						}
 						if (data.Length != 5)
 						{
-							plugin.Error("Error reading line " + currentLine);
+							plugin.Error("Error reading line " + (currentLine+1));
 							continue;
 						}
 						if (!Enum.TryParse(data[0].Trim(), out RoomType room))
 						{
-							plugin.Error("Error using RoomType " + data[0] + " in line " + currentLine);
+							plugin.Error("Error using RoomType " + data[0] + " in line " + (currentLine + 1));
 							continue;
 						}
 						string[] itemData = data[1].Split(',');
 						List<ItemType> itemTypes = new List<ItemType>();
-						List<int> CustomItems = null;
-						if (ImBool) CustomItems = new List<int>();
+						List<int> CustomItems = new List<int>();
 						if (itemData.Length == 0)
 						{
 							plugin.Error("Error fetching ItemTypes " + data[1] + " in line " + currentLine);
@@ -119,30 +117,35 @@ namespace ItemSpawner
 						foreach (string itemDataUntrimmed in itemData)
 						{
 							string itemDataValue = itemDataUntrimmed.Trim();
-							if (ImBool)
+							#region ItemManager Region
+							if (itemDataValue.StartsWith("IM_"))
 							{
-								if (itemDataValue.StartsWith("IM:"))
+								if (int.TryParse(itemDataValue.Substring(3), out int customItem))
 								{
-									if (int.TryParse(itemDataValue.Substring(3), out int customItem))
+									if (ItemManager.Items.Handlers.ContainsKey(customItem))
 									{
-										if (ItemManager.Items.Handlers.ContainsKey(customItem))
-										{
-											CustomItems.Add(customItem);
-										}
-										else
-										{
-											plugin.Error("Custom item with ID " + customItem + " not installed/not found!");
-										}
+										CustomItems.Add(customItem);
 									}
 									else
 									{
-										plugin.Error("\"ID\" " + itemDataValue.Substring(3) + " isn't a valid ID for ItemManager!");
+										plugin.Error("Custom item with ID " + customItem + " not installed/not found!");
 									}
 								}
+								else
+								{
+									plugin.Error("\"ID\" " + itemDataValue.Substring(3) + " isn't a valid ID for ItemManager!");
+								}
 							}
-							else if (!Enum.TryParse(itemDataValue.Trim(), out ItemType itemType))
+							else
+							#endregion
+							if (!Enum.TryParse(itemDataValue.Trim(), out ItemType itemType))
 							{
-								plugin.Error("Error using ItemType " + itemDataValue.Trim() + " in line " + currentLine);
+								if (int.TryParse(itemDataValue.Trim(), out int id))
+								{
+									itemType = (ItemType)id;
+									itemTypes.Add((ItemType)id);
+								}
+								else plugin.Error("Error using ItemType " + itemDataValue.Trim() + " in line " + currentLine);
 							}
 							else itemTypes.Add(itemType);
 						}
@@ -179,7 +182,7 @@ namespace ItemSpawner
 					{
 						if (rand.Next(0, 10000) <= spawn.probability * 100)
 						{
-							if (!ImBool && spawn.CustomItems != null)
+							if (spawn.CustomItems != null)
 							{
 								int itemInt = rand.Next(0, spawn.items.Length + spawn.CustomItems.Length);
 								if (itemInt < spawn.items.Length)
@@ -188,7 +191,7 @@ namespace ItemSpawner
 								}
 								else
 								{
-									Spawner.SpawnCustomItem(room, spawn.CustomItems[itemInt - spawn.items.Length], spawn.position, spawn.rotation);
+									CIQueue.Enqueue(new CusItemInfo(room, spawn.CustomItems[itemInt - spawn.items.Length], spawn.position, spawn.rotation));
 								}
 							}
 							else Spawner.SpawnItem(room, spawn.items[rand.Next(0, spawn.items.Length)], spawn.position, spawn.rotation);
@@ -215,7 +218,7 @@ namespace ItemSpawner
 			}
 			for (i = 0; i < size2; i++)
 			{
-				parsedValue += "IM:" + customItems[i] + (i != size2 - 1 ? ", " : string.Empty);
+				parsedValue += "IM_" + customItems[i] + (i != size2 - 1 ? ", " : string.Empty);
 			}
 			return parsedValue;
 		}
@@ -239,6 +242,31 @@ namespace ItemSpawner
 						':' + spawnInfo.rotation.x.ToString(CultureInfo.InvariantCulture) +
 						',' + spawnInfo.rotation.y.ToString(CultureInfo.InvariantCulture) +
 						',' + spawnInfo.rotation.z.ToString(CultureInfo.InvariantCulture);
+		}
+
+		public void OnRoundStart(RoundStartEvent ev)
+		{
+			while(CIQueue.Count != 0)
+			{
+				CusItemInfo info = CIQueue.Dequeue();
+				Spawner.SpawnCustomItem(info.room, info.id, info.position, info.rotation);
+			}
+		}
+	}
+
+	internal class CusItemInfo
+	{
+		public Room room;
+		public int id;
+		public Vector position;
+		public Vector rotation;
+
+		public CusItemInfo(Room room, int id, Vector position, Vector rotation)
+		{
+			this.room = room;
+			this.id = id;
+			this.position = position;
+			this.rotation = rotation;
 		}
 	}
 }

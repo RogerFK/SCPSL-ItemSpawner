@@ -77,9 +77,16 @@ namespace ItemSpawner
 			}
 			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in vectorial calculus */
 			var rotationConv = (room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation));
-			ItemManager.Items.Handlers[id].Create((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector)), Quaternion.Euler(rotationConv.x, rotationConv.y, rotationConv.z));
-			
-			if (ploogin.verbose) ploogin.Info("Spawned IM:" + id.ToString() + " in: " + room.RoomType.ToString());
+
+			try
+			{
+				ItemManager.Items.Handlers[id].Create((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector)), Quaternion.Euler(rotationConv.x, rotationConv.y, rotationConv.z));
+				if (ploogin.verbose) ploogin.Info("Spawned IM_" + id.ToString() + " in: " + room.RoomType.ToString());
+			}
+			catch (Exception e)
+			{
+				ploogin.Info(e.ToString());
+			}
 		}
 		[PipeMethod] // according to Androx, piped methods don't allow overloads
 		public static void SpawnInRoomType(RoomType room, ItemType item, Vector vector, Vector rotation = null)

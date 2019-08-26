@@ -60,7 +60,7 @@ namespace ItemSpawner
 			{
 				#region HELP region
 				case "HELP":
-					if (args.Count() > 1)
+					if (args.Length > 1)
 					{
 						switch (args[1].ToUpper())
 						{
@@ -68,8 +68,9 @@ namespace ItemSpawner
 							case "AC":
 							case "ADDC":
 							case "ADDCOINS":
+							case "TONEWLIST":
 								return new string[] { "ITS +/AC/ADDC/ADDCOINS <RoomType> - Adds the coins to spawn relatively to a roomtype from the list in ITEMSPAWNER ROOMLIST to a new list in ITEMSPAWNER NEWLIST so you can modify them one by one," +
-									" then removes that coin position from the current list, and then you can use ITEMSPAWNER NEWLIST to modify their parameters (such as it's probability, etc.)." };
+									" then removes that coin position from the current list, and then you can use ITEMSPAWNER NEWLIST to modify their parameters (such as it's probability, etc.).\n<b>Please note: coins are visual queues to see more or less where the item will be spawned</b>" };
 							case "CL":
 							case "REML":
 							case "REMOVELIST":
@@ -110,7 +111,8 @@ namespace ItemSpawner
 				case "AC":
 				case "ADDC":
 				case "ADDCOINS":
-					if(args.Count() < 2)
+				case "TONEWLIST":
+					if (args.Length < 2)
 					{
 						return new string[] { "Usage: ITEMSPAWNER ADDCOINS <RoomType> - Adds the coin spawned through the newpos command to a list you can later modify, then removes them from the map" };
 					}
@@ -122,22 +124,22 @@ namespace ItemSpawner
 						return new string[] { "Currently, the spawned coin list is empty" };
 					}
 					Room muhRoom = Spawner.rooms.Where(x => x.RoomType.Equals(muhRoomType)).First();
-					int lines = FileManager.ReadAllLines("./items.txt").Count() - 1;
+					int lines = FileManager.ReadAllLines("./items.txt").Length - 1;
 					foreach(PosVectorPair pair in spawnedCoins)
 					{
+						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, new int[] { }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativeRotation(muhRoom, pair.rotation)));
 						lines++;
-						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, new int[] { 0 }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativeRotation(muhRoom, pair.rotation)));
 					}
 					spawnedCoins.Clear();
-					return new string[] { "Added coins to the NEWLIST and cleared the list" };
+					return new string[] { "Added coins to the NEWLIST and cleared the old list" };
 				case "NL":
 				case "NEW":
 				case "NLIST":
 				case "NEWLIST":
-					if (args.Count() > 1)
+					if (args.Length > 1)
 					{
 						#region Newlist Region
-						switch (args[1].ToUpper())
+						switch (args[1].ToUpperInvariant())
 						{
 							case "C":
 							case "CF":
@@ -153,9 +155,9 @@ namespace ItemSpawner
 							case "E":
 							case "ED":
 							case "EDIT":
-								if (args.Count() < 3)
+								if (args.Length < 3)
 								{
-									return new string[] { "Usage: ITEMSPAWNER SPAWNLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
+									return new string[] { "Usage: IS " + args[0] + " " + args[1] + " <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER " + args[0] + " " + args[1] + " 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
 								}
 								// Here comes the fun part.
 								if (addList.Count == 0)
@@ -170,7 +172,7 @@ namespace ItemSpawner
 								{
 									return new string[] { "Please, enter a valid ID." };
 								}
-								if(args.Count() < 4)
+								if(args.Length < 4)
 								{
 									return new string[] { "Please, introduce another argument." };
 								}
@@ -178,7 +180,7 @@ namespace ItemSpawner
 								addList.RemoveAt(id - 1);
 								string returningString = "Item with ID " + args[2];
 								string[] editArgs = args.Skip(3).ToArray();
-								for (int i = 0; i < editArgs.Count(); i++)
+								for (int i = 0; i < editArgs.Length; i++)
 								{
 									if (editArgs[i].ToUpper().StartsWith("ITEMS="))
 									{
@@ -190,7 +192,8 @@ namespace ItemSpawner
 										foreach (string item in probablyItems)
 										{
 											string itemDataValue = item.Trim();
-											if (ItemsFileManager.ImBool && item.StartsWith("IM:"))
+											#region ItemManager Region
+											if (item.StartsWith("IM_"))
 											{
 												if (int.TryParse(itemDataValue.Substring(3), out int customItem))
 												{
@@ -205,10 +208,20 @@ namespace ItemSpawner
 													}
 												}
 											}
-											else if (Enum.TryParse(item, out ItemType itemType))
+											else  
+											#endregion
+											if (Enum.TryParse(item, out ItemType itemType))
 											{
 												itemsToAdd[j] = itemType;
 												j++;
+											}
+											else if(int.TryParse(item, out int idParsed))
+											{
+												if (idParsed >= -1 && idParsed <= 30)
+												{
+													itemsToAdd[j] = (ItemType)idParsed;
+													j++;
+												}
 											}
 										}
 										foreach (int ID in invalidCustomIds)
@@ -281,9 +294,9 @@ namespace ItemSpawner
 								{
 									return new string[] { "There are no items in the NEWLIST." };
 								}
-								if (args.Count() < 3)
+								if (args.Length < 3)
 								{
-									return new string[] { "Usage: ITEMSPAWNER REMOVE <id>" };
+									return new string[] { "Usage: ITEMSPAWNER " + args[0] + " " + args[1] + " <id>" };
 								}
 								if (!int.TryParse(args[2], out int removeId))
 								{
@@ -309,7 +322,7 @@ namespace ItemSpawner
 						foreach (SpawnInfo spawnInfo in addList)
 						{
 							i++;
-							addListString += Environment.NewLine + i + ":\n - Roomtype:" + spawnInfo.RoomType.ToString()
+							addListString += Environment.NewLine + i + ": - Roomtype:" + spawnInfo.RoomType.ToString()
 								+ "\n - Items: " + ItemsFileManager.ParseItems(spawnInfo.items, spawnInfo.CustomItems)
 								+ "\n - Probability: " + spawnInfo.probability.ToString()
 								+ "\n - Position: " + spawnInfo.position.ToString()
@@ -331,7 +344,7 @@ namespace ItemSpawner
 				case "SPL":
 				case "SPAWNS":
 				case "SPAWNLIST":
-					if (args.Count() == 1)
+					if (args.Length == 1)
 					{
 						// RoomType:ItemType, ItemType2...:Probability:Vector:Rotation
 						string spawnlistString = "List:\n";
@@ -352,9 +365,9 @@ namespace ItemSpawner
 							case "E":
 							case "ED":
 							case "EDIT":
-								if (args.Count() < 3)
+								if (args.Length < 3)
 								{
-									return new string[] { "Usage: ITEMSPAWNER SPAWNLIST EDIT <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
+									return new string[] { "Usage: ITEMSPAWNER " + args[0] + " " + args[1] + " <id> [items=ITEM1,ITEM2/probability=XX.X/rotation=X,Y,Z/position=X,Y,Z]\nExample: 'ITEMSPAWNER SPAWNLIST EDIT 4 items=COIN,MEDKIT rotation=1,0,0 probability=12.5'. Items CAN'T be separated with spaces." };
 								}
 								// Here comes the fun part.
 								if (ItemsFileManager.spawnlist.Count == 0)
@@ -369,7 +382,7 @@ namespace ItemSpawner
 								{
 									return new string[] { "Please, enter a valid ID." };
 								}
-								if (args.Count() < 4)
+								if (args.Length < 4)
 								{
 									return new string[] { "Please, introduce another argument." };
 								}
@@ -377,9 +390,9 @@ namespace ItemSpawner
 								SpawnInfo spawnInfo = new SpawnInfo(spawnInfoRef.RoomType, spawnInfoRef.line, spawnInfoRef.items, spawnInfoRef.CustomItems, spawnInfoRef.probability, spawnInfoRef.position, spawnInfoRef.rotation);
 								string returningString = "Item with ID " + args[2];
 								string[] editArgs = args.Skip(3).ToArray();
-								for (int i = 0; i < editArgs.Count(); i++)
+								for (int i = 0; i < editArgs.Length; i++)
 								{
-									if (editArgs[i].ToUpper().StartsWith("ITEMS="))
+									if (editArgs[i].ToUpperInvariant().StartsWith("ITEMS="))
 									{
 										string[] probablyItems = editArgs[i].Substring(6).Split(',');
 										ItemType[] itemsToAdd = new ItemType[probablyItems.Length];
@@ -389,7 +402,8 @@ namespace ItemSpawner
 										foreach (string item in probablyItems)
 										{
 											string itemDataValue = item.Trim();
-											if (ItemsFileManager.ImBool && item.StartsWith("IM:"))
+											#region ItemManager Region
+											if (item.StartsWith("IM_"))
 											{
 												if (int.TryParse(itemDataValue.Substring(3), out int customItem))
 												{
@@ -404,10 +418,20 @@ namespace ItemSpawner
 													}
 												}
 											}
-											else if (Enum.TryParse(item, out ItemType itemType))
+											else  
+											#endregion
+											if (Enum.TryParse(item, out ItemType itemType))
 											{
 												itemsToAdd[j] = itemType;
 												j++;
+											}
+											else if (int.TryParse(item, out int idParsed))
+											{
+												if(idParsed >=-1 && idParsed <= 30)
+												{
+													itemsToAdd[j] = (ItemType)idParsed;
+													j++;
+												}
 											}
 										}
 										if (j + z == 0)
@@ -479,7 +503,7 @@ namespace ItemSpawner
 								{
 									return new string[] { "There are no items in the Spawnlist." };
 								}
-								if (args.Count() < 2)
+								if (args.Length < 2)
 								{
 									return new string[] { "Usage: ITEMSPAWNER REMOVE <id>" };
 								}
@@ -514,7 +538,7 @@ namespace ItemSpawner
 				Physics.Raycast(scp049Component.plyCam.transform.position, plyRot, out RaycastHit where, 40f, scp106Component.teleportPlacementMask);
 				if (where.point.Equals(Vector3.zero))
 				{
-					ev.ReturnMessage = "Failed to spawn the coin. Try another place.";
+					ev.ReturnMessage = "Failed to get the vector, and to spawn the coin. Try another place.";
 				}
 				else
 				{
@@ -523,7 +547,7 @@ namespace ItemSpawner
 					spawnedCoins.Add(new PosVectorPair(position, rotation));
 					Room room = ClosestRoom(where.point);
 					ev.ReturnMessage = "Added " + where.point.ToString() + " to the list."
-						+ "\nYou're probably (maybe not) looking for the RoomType: " + room.RoomType.ToString() + "\nIf that's not the Room, check ITS RL through the R.A. console";
+						+ "\nYou're probably (maybe not) looking for the RoomType: " + room.RoomType.ToString() + "\nIf that's not the room you're looking for, check ITS RL through the R.A. console";
 				}
 			}
 		}
