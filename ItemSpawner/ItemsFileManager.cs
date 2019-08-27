@@ -224,14 +224,32 @@ namespace ItemSpawner
 		}
 		public static void DelSpawnInfo(SpawnInfo spawnInfo)
 		{
-			string oldStr = FileManager.ReadAllLines("./items.txt").ElementAt(spawnInfo.line);
-			FileManager.ReplaceLine(spawnInfo.line, "# Deleted SpawnInfo: " + oldStr, "./items.txt");
+			string path;
+			if (ItemSpawnerPlugin.instance.useGlobalItems)
+			{
+				path = "./items.txt";
+			}
+			else
+			{
+				path = FileManager.GetAppFolder() + ("items.txt");
+			}
+			string oldStr = FileManager.ReadAllLines(path).ElementAt(spawnInfo.line);
+			FileManager.ReplaceLine(spawnInfo.line, "# Deleted SpawnInfo: " + oldStr, path);
 			spawnlist.Remove(spawnInfo);
 		}
 		public static void UpdateSpawnInfo(SpawnInfo oldSpawnInfo, SpawnInfo newSpawnInfo)
 		{
-			// This causes an exception if any retard removes the items.txt file
-			FileManager.ReplaceLine(oldSpawnInfo.line, SpawnInfoToStr(newSpawnInfo), "./items.txt");
+			// This causes an exception if any retard removes or modifies the items.txt file
+			string path;
+			if (ItemSpawnerPlugin.instance.useGlobalItems)
+			{
+				path = "./items.txt";
+			}
+			else
+			{
+				path = FileManager.GetAppFolder() + ("items.txt");
+			}
+			FileManager.ReplaceLine(oldSpawnInfo.line, SpawnInfoToStr(newSpawnInfo), path);
 		}
 		public static string SpawnInfoToStr(SpawnInfo spawnInfo)
 		{

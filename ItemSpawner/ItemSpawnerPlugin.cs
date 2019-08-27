@@ -20,6 +20,7 @@ namespace ItemSpawner
 		)]
 	public class ItemSpawnerPlugin : Plugin
 	{
+		public static ItemSpawnerPlugin instance;
 		public override void OnDisable()
 		{
 			Info("Thank god you disabled me. Your CPU will surely thank you tbh");
@@ -43,6 +44,7 @@ namespace ItemSpawner
 
 		public override void Register()
 		{
+			instance = this;
 			AddEventHandlers(new ItemsFileManager(this), Priority.Low);
 			AddEventHandlers(new ItemSpawnerCommand(this), Priority.Low);
 			Spawner.Init(this);
