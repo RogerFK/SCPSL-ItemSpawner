@@ -4,6 +4,9 @@
 
 To get the latest release, head over to https://github.com/RogerFK/SMOD2-ItemSpawner/releases/latest.
 
+# Discord
+## In case you want to get pinged about my stuff and all of that, hop on my Discord: https://discord.gg/MQdRQT2
+
 # Usage
 
 Video of me explaining it with my bad spaniard accent: https://www.youtube.com/watch?v=OYSSO26tmHA
