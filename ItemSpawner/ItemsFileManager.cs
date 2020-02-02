@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using EXILED;
 using Smod2;
 using Smod2.API;
 using Smod2.EventHandlers;
 using Smod2.Events;
+using UnityEngine;
 
 namespace ItemSpawner
 {
@@ -19,22 +21,22 @@ namespace ItemSpawner
 		{
 			this.plugin = plugin;
 		}
-		private Vector VectorParser(string vectorData, int line = 0)
+		private Vector3 Vector3Parser(string Vector3Data, int line = 0)
 		{
-			string[] vector = vectorData.Split(',');
-			if (vector.Length != 3)
+			string[] Vector3 = Vector3Data.Split(',');
+			if (Vector3.Length != 3)
 			{
-				plugin.Info("Bad format for a vector (" + vectorData + (line > 0 ? ") in line " + line : ""));
-				return null;
+				Plugin.Error("Bad format for a Vector3 (" + Vector3Data + (line > 0 ? ") in line " + line : ""));
+				return UnityEngine.Vector3.zero;
 			}
-			if (!float.TryParse(vector[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float x)
-				|| !float.TryParse(vector[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float y)
-				|| !float.TryParse(vector[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
+			if (!float.TryParse(Vector3[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float x)
+				|| !float.TryParse(Vector3[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float y)
+				|| !float.TryParse(Vector3[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
 			{
-				plugin.Info("Error parsing vector: (" + vectorData + (line > 0 ? ") in line " + line : ""));
-				return null;
+				Plugin.Error("Error parsing Vector3: (" + Vector3Data + (line > 0 ? ") in line " + line : ""));
+				return UnityEngine.Vector3.zero;
 			}
-			return new Vector(x, y, z);
+			return new Vector3(x, y, z);
 		}
 		public static List<SpawnInfo> spawnlist = new List<SpawnInfo>();
 		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
@@ -90,7 +92,7 @@ namespace ItemSpawner
 
 					try
 					{
-						// RoomType:ItemType, ItemType2...:Probability:Vector:Rotation
+						// RoomType:ItemType, ItemType2...:Probability:Vector3:Rotation
 						string[] data = item.Split(':');
 						if (data.Length == 0)
 						{
@@ -154,12 +156,12 @@ namespace ItemSpawner
 							plugin.Error("Error using probability " + data[2].Trim() + " in line " + currentLine);
 							continue;
 						}
-						Vector position = VectorParser(data[3].Trim(), currentLine);
+						Vector3 position = Vector3Parser(data[3].Trim(), currentLine);
 						if (position == null)
 						{
 							continue;
 						}
-						Vector rotation = VectorParser(data[4].Trim(), currentLine);
+						Vector3 rotation = Vector3Parser(data[4].Trim(), currentLine);
 						if (rotation == null)
 						{
 							continue;
@@ -276,10 +278,10 @@ namespace ItemSpawner
 	{
 		public Room room;
 		public int id;
-		public Vector position;
-		public Vector rotation;
+		public Vector3 position;
+		public Vector3 rotation;
 
-		public CusItemInfo(Room room, int id, Vector position, Vector rotation)
+		public CusItemInfo(Room room, int id, Vector3 position, Vector3 rotation)
 		{
 			this.room = room;
 			this.id = id;

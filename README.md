@@ -15,7 +15,7 @@ You can choose to directly use the files, or you can use the commands below, in 
 
 `items.txt` file format:
 
-`RoomType:ItemType1, ItemType2...:Probability:Vector:Rotation` where RoomType comes from [this](https://github.com/Grover-c13/Smod2/wiki/Enum-Lists#roomtype) link and ItemTypes from [this](https://github.com/Grover-c13/Smod2/wiki/Enum-Lists#itemtype) link; probability takes a float number (75.48 for example); and both Vector and Rotation take things like `5,1.48,10:1,0,0`
+`RoomType:ItemType1, ItemType2...:Probability:Vector3:Rotation` where RoomType comes from [this](https://github.com/Grover-c13/Smod2/wiki/Enum-Lists#roomtype) link and ItemTypes from [this](https://github.com/Grover-c13/Smod2/wiki/Enum-Lists#itemtype) link; probability takes a float number (75.48 for example); and both Vector3 and Rotation take things like `5,1.48,10:1,0,0`
 
 If you're using the ItemManager version, to use the items you must type `"IM_XXX"` where XXX is the ID of the Custom Item you want to spawn. That is, instead of typing something like `IS NL E 1 items=COM15` you'd have to do `IS NL E 1 items=IM:101` for the HS8 shotgun, for example; same goes for the .txt file, `COIN, IM_101, IM_105` will have a 33% probability of spawning any of these.
 

@@ -1,23 +1,14 @@
-﻿/* Find an updated version of this class inside: https://github.com/RogerFK/SMOD2-ItemSpawner */
-// Inspired by old Androx's Timing.cs class
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Smod2;
-using Smod2.API;
-using Smod2.EventHandlers;
-using Smod2.Events;
-using Smod2.Piping;
 using UnityEngine;
 
 namespace ItemSpawner
 {
-	internal class Spawner : IEventHandlerWaitingForPlayers
+	internal class Spawner
 	{
 		private static ItemSpawnerPlugin ploogin;
-
 		public static void Init(ItemSpawnerPlugin plugin, Priority priority = Priority.Highest)
 		{
 			ploogin = plugin;
@@ -26,61 +17,61 @@ namespace ItemSpawner
 
 		public static List<Room> rooms = null;
 
-		public static Vector3 VectorTo3(Vector v)
+		public static Vector3 Vector3To3(Vector3 v)
 		{
 			return new Vector3(v.x, v.y, v.z);
 		}
-		public static Vector Vec3ToVector(Vector3 v)
+		public static Vector3 Vec3ToVector3(Vector3 v)
 		{
-			return new Vector(v.x, v.y, v.z);
+			return new Vector3(v.x, v.y, v.z);
 		}
 		[PipeMethod]
-		public static Vector GetRelativePosition(Room room, Vector position)
+		public static Vector3 GetRelativePosition(Room room, Vector3 position)
 		{
-			return Vec3ToVector((room.GetGameObject() as GameObject).transform.InverseTransformPoint(VectorTo3(position)));
+			return Vec3ToVector3((room.GetGameObject() as GameObject).transform.InverseTransformPoint(Vector3To3(position)));
 		}
 		[PipeMethod]
-		public static Vector GetRelativeRotation(Room room, Vector rotation)
+		public static Vector3 GetRelativeRotation(Room room, Vector3 rotation)
 		{
-			return Vec3ToVector((room.GetGameObject() as GameObject).transform.InverseTransformDirection(VectorTo3(rotation)));
+			return Vec3ToVector3((room.GetGameObject() as GameObject).transform.InverseTransformDirection(Vector3To3(rotation)));
 		}
 		[PipeMethod]
-		public static void SpawnItem(Room room, ItemType item, Vector vector, Vector rotation = null)
+		public static void SpawnItem(Room room, ItemType item, Vector3 Vector3, Vector3 rotation = null)
 		{
 			if (rotation == null)
 			{
-				rotation = Vector.Zero;
+				rotation = Vector3.Zero;
 			}
 
-			if (vector == null)
+			if (Vector3 == null)
 			{
-				ploogin.Info("You gave one null vector, somewhere");
+				ploogin.Info("You gave one null Vector3, somewhere");
 				return;
 			}
-			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in vectorial calculus */
-			PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector))),
-			Vec3ToVector((room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation))));
+			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in Vector3ial calculus */
+			PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector3((room.GetGameObject() as GameObject).transform.TransformPoint(Vector3To3(Vector3))),
+			Vec3ToVector3((room.GetGameObject() as GameObject).transform.TransformDirection(Vector3To3(rotation))));
 			if (ploogin.verbose) ploogin.Info("Spawned " + item.ToString() + " in: " + room.RoomType.ToString());
 		}
 		[PipeMethod]
-		public static void SpawnCustomItem(Room room, int id, Vector vector, Vector rotation = null)
+		public static void SpawnCustomItem(Room room, int id, Vector3 Vector3, Vector3 rotation = null)
 		{
 			if (rotation == null)
 			{
-				rotation = Vector.Zero;
+				rotation = Vector3.Zero;
 			}
 
-			if (vector == null)
+			if (Vector3 == null)
 			{
-				ploogin.Info("You gave one null vector, somewhere");
+				ploogin.Info("You gave one null Vector3, somewhere");
 				return;
 			}
-			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in vectorial calculus */
-			var rotationConv = (room.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation));
+			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in Vector3ial calculus */
+			var rotationConv = (room.GetGameObject() as GameObject).transform.TransformDirection(Vector3To3(rotation));
 
 			try
 			{
-				ItemManager.Items.Handlers[id].Create((room.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector)), Quaternion.Euler(rotationConv.x, rotationConv.y, rotationConv.z));
+				ItemManager.Items.Handlers[id].Create((room.GetGameObject() as GameObject).transform.TransformPoint(Vector3To3(Vector3)), Quaternion.Euler(rotationConv.x, rotationConv.y, rotationConv.z));
 				if (ploogin.verbose) ploogin.Info("Spawned IM_" + id.ToString() + " in: " + room.RoomType.ToString());
 			}
 			catch (Exception e)
@@ -89,16 +80,16 @@ namespace ItemSpawner
 			}
 		}
 		[PipeMethod] // according to Androx, piped methods don't allow overloads
-		public static void SpawnInRoomType(RoomType room, ItemType item, Vector vector, Vector rotation = null)
+		public static void SpawnInRoomType(RoomType room, ItemType item, Vector3 Vector3, Vector3 rotation = null)
 		{
 			if (rotation == null)
 			{
-				rotation = Vector.Zero;
+				rotation = Vector3.Zero;
 			}
 
-			if(vector == null)
+			if(Vector3 == null)
 			{
-				ploogin.Info("You gave one null vector inside a SpawnInRoomType method, somewhere");
+				ploogin.Info("You gave one null Vector3 inside a SpawnInRoomType method, somewhere");
 				return;
 			}
 
@@ -106,8 +97,8 @@ namespace ItemSpawner
 			{
 				if (r.RoomType == room)
 				{
-					PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector((r.GetGameObject() as GameObject).transform.TransformPoint(VectorTo3(vector))),
-					Vec3ToVector((r.GetGameObject() as GameObject).transform.TransformDirection(VectorTo3(rotation))));
+					PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector3((r.GetGameObject() as GameObject).transform.TransformPoint(Vector3To3(Vector3))),
+					Vec3ToVector3((r.GetGameObject() as GameObject).transform.TransformDirection(Vector3To3(rotation))));
 					if (ploogin.verbose) ploogin.Info("Spawned " + item.ToString() + " in: " + room.ToString());
 					break;
 				}

@@ -1,4 +1,4 @@
-# Format: RoomType:ItemType:Probability:Vector:Rotation
+# Format: RoomType:ItemType:Probability:Vector3:Rotation
 
 # Cool ass medkit in 914
 SCP_914:MEDKIT, JANITOR_KEYCARD:100:1.12, 1.46, -9.82:0, 0, 1

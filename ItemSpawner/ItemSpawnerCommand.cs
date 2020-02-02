@@ -17,7 +17,7 @@ namespace ItemSpawner
 	{
 		private readonly ItemSpawnerPlugin plugin;
 
-		private static List<PosVectorPair> spawnedCoins = new List<PosVectorPair>(50);
+		private static List<PosVector3Pair> spawnedCoins = new List<PosVector3Pair>(50);
 
 		private static List<SpawnInfo> addList = new List<SpawnInfo>(50);
 		public ItemSpawnerCommand(ItemSpawnerPlugin plugin)
@@ -125,7 +125,7 @@ namespace ItemSpawner
 					}
 					Room muhRoom = Spawner.rooms.Where(x => x.RoomType.Equals(muhRoomType)).First();
 					int lines = FileManager.ReadAllLines("./items.txt").Length - 1;
-					foreach(PosVectorPair pair in spawnedCoins)
+					foreach(PosVector3Pair pair in spawnedCoins)
 					{
 						addList.Add(new SpawnInfo(muhRoomType, lines, new ItemType[] { ItemType.COIN }, new int[] { }, 100f, Spawner.GetRelativePosition(muhRoom, pair.position), Spawner.GetRelativeRotation(muhRoom, pair.rotation)));
 						lines++;
@@ -254,7 +254,7 @@ namespace ItemSpawner
 									}
 									else if (editArgs[i].ToUpper().StartsWith("ROTATION="))
 									{
-										Vector vec = ParseRot(editArgs[i].Substring(9));
+										Vector3 vec = ParseRot(editArgs[i].Substring(9));
 										if (vec != null)
 										{
 											spawnInfo.rotation = vec;
@@ -267,7 +267,7 @@ namespace ItemSpawner
 									}
 									else if (editArgs[i].ToUpper().StartsWith("POSITION="))
 									{
-										Vector vec = ParseRot(editArgs[i].Substring(9));
+										Vector3 vec = ParseRot(editArgs[i].Substring(9));
 										if (vec != null)
 										{
 											spawnInfo.position = vec;
@@ -346,7 +346,7 @@ namespace ItemSpawner
 				case "SPAWNLIST":
 					if (args.Length == 1)
 					{
-						// RoomType:ItemType, ItemType2...:Probability:Vector:Rotation
+						// RoomType:ItemType, ItemType2...:Probability:Vector3:Rotation
 						string spawnlistString = "List:\n";
 						int i = 0;
 						foreach (SpawnInfo spawnInfo in ItemsFileManager.spawnlist)
@@ -461,7 +461,7 @@ namespace ItemSpawner
 									}
 									else if (editArgs[i].ToUpper().StartsWith("ROTATION="))
 									{
-										Vector vec = ParseRot(editArgs[i].Substring(9));
+										Vector3 vec = ParseRot(editArgs[i].Substring(9));
 										if (vec != null)
 										{
 											spawnInfo.rotation = vec;
@@ -474,7 +474,7 @@ namespace ItemSpawner
 									}
 									else if (editArgs[i].ToUpper().StartsWith("POSITION="))
 									{
-										Vector vec = ParseRot(editArgs[i].Substring(9));
+										Vector3 vec = ParseRot(editArgs[i].Substring(9));
 										if (vec != null)
 										{
 											spawnInfo.position = vec;
@@ -538,13 +538,13 @@ namespace ItemSpawner
 				Physics.Raycast(scp049Component.plyCam.transform.position, plyRot, out RaycastHit where, 40f, scp106Component.teleportPlacementMask);
 				if (where.point.Equals(Vector3.zero))
 				{
-					ev.ReturnMessage = "Failed to get the vector, and to spawn the coin. Try another place.";
+					ev.ReturnMessage = "Failed to get the Vector3, and to spawn the coin. Try another place.";
 				}
 				else
 				{
-					Vector rotation = new Vector(-plyRot.x, plyRot.y, -plyRot.z), position = Spawner.Vec3ToVector(where.point) + (Vector.Up * 0.1f);
+					Vector3 rotation = new Vector3(-plyRot.x, plyRot.y, -plyRot.z), position = Spawner.Vec3ToVector3(where.point) + (Vector3.Up * 0.1f);
 					PluginManager.Manager.Server.Map.SpawnItem(ItemType.COIN, position, rotation);
-					spawnedCoins.Add(new PosVectorPair(position, rotation));
+					spawnedCoins.Add(new PosVector3Pair(position, rotation));
 					Room room = ClosestRoom(where.point);
 					ev.ReturnMessage = "Added " + where.point.ToString() + " to the list."
 						+ "\nYou're probably (maybe not) looking for the RoomType: " + room.RoomType.ToString() + "\nIf that's not the room you're looking for, check ITS RL through the R.A. console";
@@ -557,7 +557,7 @@ namespace ItemSpawner
 			Room room = null;
 			foreach (Room r in Spawner.rooms)
 			{
-				float curDist = Vector.Distance(Spawner.Vec3ToVector(yourpos), r.Position);
+				float curDist = Vector3.Distance(Spawner.Vec3ToVector3(yourpos), r.Position);
 				if (curDist < closestDist)
 				{
 					closestDist = curDist;
@@ -566,22 +566,22 @@ namespace ItemSpawner
 			}
 			return room;
 		}
-		private Vector ParseRot(string vectorData)
+		private Vector3 ParseRot(string Vector3Data)
 		{
-			string[] vector = vectorData.Split(',');
-			if (vector.Length != 3)
+			string[] Vector3 = Vector3Data.Split(',');
+			if (Vector3.Length != 3)
 			{
-				plugin.Info("Bad format for a vector (" + vectorData + ')');
+				plugin.Info("Bad format for a Vector3 (" + Vector3Data + ')');
 				return null;
 			}
-			if (!float.TryParse(vector[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float x)
-				|| !float.TryParse(vector[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float y)
-				|| !float.TryParse(vector[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
+			if (!float.TryParse(Vector3[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float x)
+				|| !float.TryParse(Vector3[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float y)
+				|| !float.TryParse(Vector3[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
 			{
-				plugin.Info("Error parsing vector: (" + vectorData + ')');
+				plugin.Info("Error parsing Vector3: (" + Vector3Data + ')');
 				return null;
 			}
-			return new Vector(x, y, z);
+			return new Vector3(x, y, z);
 		}
 	}
 }

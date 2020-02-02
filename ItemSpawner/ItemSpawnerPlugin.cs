@@ -1,26 +1,15 @@
 ﻿using System.Collections.Generic;
-using Smod2;
-using Smod2.API;
-using Smod2.Attributes;
-using Smod2.Config;
-using Smod2.Events;
+using EXILED;
+using UnityEngine;
 
 namespace ItemSpawner
 {
-	[PluginDetails(
-		author = "RogerFK",
-		name = "Item Spawner",
-		description = "A plugin that acts as an API too to spawn items and fetch custom positions easily",
-		id = "rogerfk.spawner",
-		version = "2.0",
-		SmodMajor = 3,
-		SmodMinor = 4,
-		SmodRevision = 0,
-		configPrefix = "is"
-		)]
 	public class ItemSpawnerPlugin : Plugin
 	{
-		public static ItemSpawnerPlugin instance;
+		public static ItemSpawnerPlugin Instance { private set; get; };
+
+		public override string getName => "ItemSpawner";
+
 		public override void OnDisable()
 		{
 			Info("Thank god you disabled me. Your CPU will surely thank you tbh");
@@ -28,27 +17,29 @@ namespace ItemSpawner
 
 		public override void OnEnable()
 		{
-			Info("Stuff spawner enabled");
+			Info("Stuff spawner enabled.");
 		}
-		[ConfigOption]
+
 		public string[] allowedranks = new string[] { "owner", "admin" };
 
-		[ConfigOption]
 		public bool enable = true;
 
-		[ConfigOption]
 		public bool verbose = true;
 
-		[ConfigOption]
 		public bool useGlobalItems = true;
 
-		public override void Register()
+		public void Register()
 		{
 			instance = this;
 			AddEventHandlers(new ItemsFileManager(this), Priority.Low);
 			AddEventHandlers(new ItemSpawnerCommand(this), Priority.Low);
 			Spawner.Init(this);
 			AddCommands(new string[] { "itemspawner", "is", "items", "its" }, new ItemSpawnerCommand(this));
+		}
+
+		public override void OnReload()
+		{
+			// this should be used by the plugin, btw, so it saves everything into a file *just in case*
 		}
 	}
 	public struct SpawnInfo
@@ -59,10 +50,10 @@ namespace ItemSpawner
 		public ItemType[] items;
 		public int[] CustomItems;
 		public float probability;
-		public Vector position;
-		public Vector rotation;
+		public Vector3 position;
+		public Vector3 rotation;
 
-		public SpawnInfo(RoomType roomType, int line, ItemType[] itemType, int[] CustomItems, float probability, Vector position, Vector rotation)
+		public SpawnInfo(RoomType roomType, int line, ItemType[] itemType, int[] CustomItems, float probability, Vector3 position, Vector3 rotation)
 		{
 			RoomType = roomType;
 			items = itemType;
@@ -73,11 +64,11 @@ namespace ItemSpawner
 			this.rotation = rotation;
 		}
 	}
-	public struct PosVectorPair
+	public struct PosVector3Pair
 	{
-		public readonly Vector position;
-		public readonly Vector rotation;
-		public PosVectorPair(Vector position, Vector rotation)
+		public readonly Vector3 position;
+		public readonly Vector3 rotation;
+		public PosVector3Pair(Vector3 position, Vector3 rotation)
 		{
 			this.position = position;
 			this.rotation = rotation;
