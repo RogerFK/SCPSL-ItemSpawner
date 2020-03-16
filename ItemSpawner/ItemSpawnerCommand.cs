@@ -3,13 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-using Smod2;
-using Smod2.API;
-using Smod2.Commands;
-using Smod2.EventHandlers;
-using Smod2.Events;
 using UnityEngine;
-using UnityEngine.Networking;
+using Mirror;
 
 namespace ItemSpawner
 {

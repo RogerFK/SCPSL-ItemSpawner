@@ -4,10 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using EXILED;
-using Smod2;
-using Smod2.API;
-using Smod2.EventHandlers;
-using Smod2.Events;
 using UnityEngine;
 
 namespace ItemSpawner
@@ -26,14 +22,14 @@ namespace ItemSpawner
 			string[] Vector3 = Vector3Data.Split(',');
 			if (Vector3.Length != 3)
 			{
-				Plugin.Error("Bad format for a Vector3 (" + Vector3Data + (line > 0 ? ") in line " + line : ""));
+				Log.Error("Bad format for a Vector3 (" + Vector3Data + (line > 0 ? ") in line " + line : ""));
 				return UnityEngine.Vector3.zero;
 			}
 			if (!float.TryParse(Vector3[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float x)
 				|| !float.TryParse(Vector3[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float y)
 				|| !float.TryParse(Vector3[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
 			{
-				Plugin.Error("Error parsing Vector3: (" + Vector3Data + (line > 0 ? ") in line " + line : ""));
+				Log.Error("Error parsing Vector3: (" + Vector3Data + (line > 0 ? ") in line " + line : ""));
 				return UnityEngine.Vector3.zero;
 			}
 			return new Vector3(x, y, z);

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using EXILED;
+using EXILED.ApiObjects;
+using EXILED.Extensions;
 using UnityEngine;
 
 namespace ItemSpawner
@@ -15,7 +17,7 @@ namespace ItemSpawner
 			plugin.AddEventHandlers(new Spawner(), priority);
 		}
 
-		public static List<Room> rooms = null;
+		public static List<Room> Rooms = null;
 
 		public static Vector3 Vector3To3(Vector3 v)
 		{
@@ -25,107 +27,66 @@ namespace ItemSpawner
 		{
 			return new Vector3(v.x, v.y, v.z);
 		}
-		[PipeMethod]
+		
 		public static Vector3 GetRelativePosition(Room room, Vector3 position)
 		{
-			return Vec3ToVector3((room.GetGameObject() as GameObject).transform.InverseTransformPoint(Vector3To3(position)));
+			return Vec3ToVector3(room.Transform.InverseTransformPoint(Vector3To3(position)));
 		}
-		[PipeMethod]
+		
 		public static Vector3 GetRelativeRotation(Room room, Vector3 rotation)
 		{
-			return Vec3ToVector3((room.GetGameObject() as GameObject).transform.InverseTransformDirection(Vector3To3(rotation)));
+			return Vec3ToVector3(room.Transform.InverseTransformDirection(Vector3To3(rotation)));
 		}
-		[PipeMethod]
-		public static void SpawnItem(Room room, ItemType item, Vector3 Vector3, Vector3 rotation = null)
+
+		public static void SpawnItem(Room room, ItemType item, Vector3 position, Quaternion rotation = default, int sight = 0, int barrel = 0, int other = 0)
 		{
-			if (rotation == null)
+			if (room == null) throw new ArgumentNullException("position", "Tried to spawn an item with a null EXILED.ApiObject.Room");
+			if (position == null)
 			{
-				rotation = Vector3.Zero;
+				throw new ArgumentNullException("position", "Tried to spawn an item with a null UnityEngine.Vector3");
 			}
-
-			if (Vector3 == null)
+			// i don't trust unity
+			if (rotation == default)
 			{
-				ploogin.Info("You gave one null Vector3, somewhere");
-				return;
+				rotation = new Quaternion(0f, 0f, 0f, 0f);
 			}
-			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in Vector3ial calculus */
-			PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector3((room.GetGameObject() as GameObject).transform.TransformPoint(Vector3To3(Vector3))),
-			Vec3ToVector3((room.GetGameObject() as GameObject).transform.TransformDirection(Vector3To3(rotation))));
-			if (ploogin.verbose) ploogin.Info("Spawned " + item.ToString() + " in: " + room.RoomType.ToString());
+			var transf = room.Transform;
+			Quaternion epicDirection = new Quaternion(transf.rotation.x + rotation.x, transf.rotation.y + rotation.y, transf.rotation.z + rotation.z, transf.rotation.z + rotation.z);
+			Map.SpawnItem(item, float.PositiveInfinity, transf.TransformPoint(position), epicDirection, sight, barrel, other);
+			if (ploogin.verbose) Log.Info("Spawned " + item.ToString() + " in: " + room.Name);
 		}
-		[PipeMethod]
-		public static void SpawnCustomItem(Room room, int id, Vector3 Vector3, Vector3 rotation = null)
+
+		/* To be implemented when custom items are a thing again
+		public static void TrySpawnCustomItem(Room room, dynamic identifier, Vector3 position, Quaternion rotation = default)
 		{
-			if (rotation == null)
+			try 
 			{
-				rotation = Vector3.Zero;
+				SpawnCustomItem(room, identifier, position, rotation);
 			}
-
-			if (Vector3 == null)
+			catch (System.IO.FileNotFoundException ex) 
 			{
-				ploogin.Info("You gave one null Vector3, somewhere");
-				return;
-			}
-			/* Thanks to Laserman for pointing out there's a TransformPoint inside Unity so I didn't have to use my slight knowledge in Vector3ial calculus */
-			var rotationConv = (room.GetGameObject() as GameObject).transform.TransformDirection(Vector3To3(rotation));
-
-			try
-			{
-				ItemManager.Items.Handlers[id].Create((room.GetGameObject() as GameObject).transform.TransformPoint(Vector3To3(Vector3)), Quaternion.Euler(rotationConv.x, rotationConv.y, rotationConv.z));
-				if (ploogin.verbose) ploogin.Info("Spawned IM_" + id.ToString() + " in: " + room.RoomType.ToString());
-			}
-			catch (Exception e)
-			{
-				ploogin.Info(e.ToString());
+				EXILED.Log.Error($"ItemManager not found! {ex.Message}");
 			}
 		}
-		[PipeMethod] // according to Androx, piped methods don't allow overloads
-		public static void SpawnInRoomType(RoomType room, ItemType item, Vector3 Vector3, Vector3 rotation = null)
-		{
-			if (rotation == null)
-			{
-				rotation = Vector3.Zero;
-			}
-
-			if(Vector3 == null)
-			{
-				ploogin.Info("You gave one null Vector3 inside a SpawnInRoomType method, somewhere");
-				return;
-			}
-
-			foreach (Room r in rooms)
-			{
-				if (r.RoomType == room)
-				{
-					PluginManager.Manager.Server.Map.SpawnItem(item, Vec3ToVector3((r.GetGameObject() as GameObject).transform.TransformPoint(Vector3To3(Vector3))),
-					Vec3ToVector3((r.GetGameObject() as GameObject).transform.TransformDirection(Vector3To3(rotation))));
-					if (ploogin.verbose) ploogin.Info("Spawned " + item.ToString() + " in: " + room.ToString());
-					break;
-				}
-			}
-		}
-
+		 
+		public static void SpawnCustomItem(Room room, dynamic identifier, Vector3 position, Quaternion rotation = default);
+		*/
 		//copypasted from Stack Overflow
 		private class DistinctRoomComparer : IEqualityComparer<Room>
 		{
 			public bool Equals(Room x, Room y)
 			{
-				return x.RoomType == y.RoomType;
+				return x.Name == y.Name;
 			}
 			public int GetHashCode(Room obj)
 			{
-				return obj.RoomType.GetHashCode();
+				return obj.Name.GetHashCode();
 			}
 		}
 		// This thing below fetches the rooms each different round
-		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
+		public void OnWaitingForPlayers()
 		{
-			rooms = ev.Server.
-				Map
-				.Get079InteractionRooms(Scp079InteractionType.SPEAKER) // So it uses the SPEAKER one first, as it appears it works better
-				.Concat(PluginManager.Manager.Server.Map.Get079InteractionRooms(Scp079InteractionType.CAMERA)) // So the remaining ones get the CAMERA ones which appear to have no issue
-				.Distinct(new DistinctRoomComparer()) // So you don't ever get two spawns in the same place
-				.ToList(); // So you don't have to iterate over an IEnumerable over and over, which works way worse that if it wasn't a list
+			Rooms = new List<Room>(Map.GetRooms().Distinct(new DistinctRoomComparer()));
 		}
 	}
 }

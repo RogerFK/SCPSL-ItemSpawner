@@ -1,23 +1,24 @@
 ﻿using System.Collections.Generic;
 using EXILED;
+using EXILED.ApiObjects;
 using UnityEngine;
 
 namespace ItemSpawner
 {
 	public class ItemSpawnerPlugin : Plugin
 	{
-		public static ItemSpawnerPlugin Instance { private set; get; };
+		public static ItemSpawnerPlugin Instance { private set; get; }
 
 		public override string getName => "ItemSpawner";
 
 		public override void OnDisable()
 		{
-			Info("Thank god you disabled me. Your CPU will surely thank you tbh");
+			Log.Info("Thank god you disabled me. Your CPU will surely thank you tbh");
 		}
 
 		public override void OnEnable()
 		{
-			Info("Stuff spawner enabled.");
+			Log.Info("Stuff spawner enabled.");
 		}
 
 		public string[] allowedranks = new string[] { "owner", "admin" };
@@ -27,7 +28,7 @@ namespace ItemSpawner
 		public bool verbose = true;
 
 		public bool useGlobalItems = true;
-
+		/* for reference
 		public void Register()
 		{
 			instance = this;
@@ -35,7 +36,7 @@ namespace ItemSpawner
 			AddEventHandlers(new ItemSpawnerCommand(this), Priority.Low);
 			Spawner.Init(this);
 			AddCommands(new string[] { "itemspawner", "is", "items", "its" }, new ItemSpawnerCommand(this));
-		}
+		}*/
 
 		public override void OnReload()
 		{
@@ -44,7 +45,7 @@ namespace ItemSpawner
 	}
 	public struct SpawnInfo
 	{
-		public readonly RoomType RoomType;
+		public readonly Room RoomType;
 		public readonly int line; // This saves the line to later modify it
 
 		public ItemType[] items;
@@ -53,7 +54,7 @@ namespace ItemSpawner
 		public Vector3 position;
 		public Vector3 rotation;
 
-		public SpawnInfo(RoomType roomType, int line, ItemType[] itemType, int[] CustomItems, float probability, Vector3 position, Vector3 rotation)
+		public SpawnInfo(Room roomType, int line, ItemType[] itemType, int[] CustomItems, float probability, Vector3 position, Vector3 rotation)
 		{
 			RoomType = roomType;
 			items = itemType;
