@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using EXILED;
 using EXILED.ApiObjects;
 using EXILED.Extensions;
@@ -8,55 +10,48 @@ using UnityEngine;
 
 namespace ItemSpawner
 {
-	internal class Spawner
+	/// <summary>
+	/// Defines the Spawner class, to provide an easy to use API to get positions based on the current room.
+	/// </summary>
+	public static class Spawner
 	{
-		private static ItemSpawnerPlugin ploogin;
-		public static void Init(ItemSpawnerPlugin plugin, Priority priority = Priority.Highest)
-		{
-			ploogin = plugin;
-			plugin.AddEventHandlers(new Spawner(), priority);
-		}
 
-		public static List<Room> Rooms = null;
-
-		public static Vector3 Vector3To3(Vector3 v)
+		public static List<Room> DistinctRooms = null;
+		
+		public static Vector3 GetRelativePosition(this Room room, Vector3 position)
 		{
-			return new Vector3(v.x, v.y, v.z);
-		}
-		public static Vector3 Vec3ToVector3(Vector3 v)
-		{
-			return new Vector3(v.x, v.y, v.z);
+			return room.Transform.InverseTransformPoint(position);
 		}
 		
-		public static Vector3 GetRelativePosition(Room room, Vector3 position)
+		public static Vector3 GetRelativeRotation(this Room room, Vector3 rotation)
 		{
-			return Vec3ToVector3(room.Transform.InverseTransformPoint(Vector3To3(position)));
-		}
-		
-		public static Vector3 GetRelativeRotation(Room room, Vector3 rotation)
-		{
-			return Vec3ToVector3(room.Transform.InverseTransformDirection(Vector3To3(rotation)));
+			return room.Transform.InverseTransformDirection(rotation);
 		}
 
-		public static void SpawnItem(Room room, ItemType item, Vector3 position, Quaternion rotation = default, int sight = 0, int barrel = 0, int other = 0)
+		public static void SpawnItem(this Room room, ItemType item, Vector3 position, Vector3 direction, int sight = 0, int barrel = 0, int other = 0)
 		{
-			if (room == null) throw new ArgumentNullException("position", "Tried to spawn an item with a null EXILED.ApiObject.Room");
-			if (position == null)
-			{
-				throw new ArgumentNullException("position", "Tried to spawn an item with a null UnityEngine.Vector3");
-			}
-			// i don't trust unity
-			if (rotation == default)
-			{
-				rotation = new Quaternion(0f, 0f, 0f, 0f);
-			}
-			var transf = room.Transform;
-			Quaternion epicDirection = new Quaternion(transf.rotation.x + rotation.x, transf.rotation.y + rotation.y, transf.rotation.z + rotation.z, transf.rotation.z + rotation.z);
-			Map.SpawnItem(item, float.PositiveInfinity, transf.TransformPoint(position), epicDirection, sight, barrel, other);
-			if (ploogin.verbose) Log.Info("Spawned " + item.ToString() + " in: " + room.Name);
-		}
+			if (room == null) throw new ArgumentNullException("position", "Tried to spawn an item with in a non-existing EXILED.ApiObject.Room");
 
-		/* To be implemented when custom items are a thing again
+			Transform transform = room.Transform;
+			Vector3 relativeDirection = transform.TransformDirection(direction);
+			Quaternion relativeRotation = Quaternion.Euler(relativeDirection);
+			Vector3 relativePosition = transform.TransformPoint(position);
+
+			Map.SpawnItem(item, float.PositiveInfinity, relativePosition, relativeRotation, sight, barrel, other);
+			
+			if (SpawnerConfig.Configs.Debug)
+			{
+				ServerConsole.AddLog($"[ItemSpawner DEBUG] Spawned {item.ToString() } in {room.Name}" +
+										 $"{Environment.NewLine}\t- Position: [{relativePosition.x}, {relativePosition.y}, {relativePosition.z}] (world space: {transform.position.ToString()})" +
+										 $"{Environment.NewLine}\t- Rotation: [{relativeRotation.x}, {relativeRotation.y}, {relativeRotation.z}]" +
+										 $"{Environment.NewLine}\t- Attachments: sight: {sight}, barrel: {barrel}, other: {other}" +
+										 $"{Environment.NewLine}\t- Spawned by:{Assembly.GetCallingAssembly().GetName().Name}");
+			}
+			else if (SpawnerConfig.Configs.Verbose) Log.Info("Spawned " + item.ToString() + " in: " + room.Name);
+		}
+		#region Old ItemSpawner stuff
+		/* 
+		 * To be implemented when custom items are a thing again
 		public static void TrySpawnCustomItem(Room room, dynamic identifier, Vector3 position, Quaternion rotation = default)
 		{
 			try 
@@ -71,7 +66,7 @@ namespace ItemSpawner
 		 
 		public static void SpawnCustomItem(Room room, dynamic identifier, Vector3 position, Quaternion rotation = default);
 		*/
-		//copypasted from Stack Overflow
+		#endregion
 		private class DistinctRoomComparer : IEqualityComparer<Room>
 		{
 			public bool Equals(Room x, Room y)
@@ -83,10 +78,16 @@ namespace ItemSpawner
 				return obj.Name.GetHashCode();
 			}
 		}
-		// This thing below fetches the rooms each different round
-		public void OnWaitingForPlayers()
+		internal static void OnWaitingForPlayers()
 		{
-			Rooms = new List<Room>(Map.GetRooms().Distinct(new DistinctRoomComparer()));
+			/**
+			 * You have multicore/multithread support? Nice, the secondary GC thread will take
+			 * care of this. You don't? Then LOL, because this is wasting precious CPU cycles.
+			 * Say goodbye to your nanoseconds.
+			 * (This just "cleans" the old list by making a new one. The other gets deleted.)
+			 * */
+
+			DistinctRooms = new List<Room>(Map.Rooms.Distinct(new DistinctRoomComparer()));
 		}
 	}
 }
