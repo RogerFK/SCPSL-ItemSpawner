@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+
 using EXILED;
 using EXILED.ApiObjects;
 using EXILED.Extensions;
+
 using UnityEngine;
 
 namespace ItemSpawner
@@ -16,29 +17,59 @@ namespace ItemSpawner
 	public static class Spawner
 	{
 
-		public static List<Room> DistinctRooms = null;
-		
+		public static List<Room> distinctRooms = null;
+
+		/// <summary>
+		/// The <see cref="Vector3"/> of the relative position (from the center of the room) to the <paramref name="room"/> based on the <paramref name="position"/>
+		/// </summary>
+		/// <param name="room">The <see cref="Room"/> you want to get the position from</param>
+		/// <param name="position">The position you want to get the relative of</param>
+		/// <returns>The <see cref="Vector3"/> from the center of the room</returns>
 		public static Vector3 GetRelativePosition(this Room room, Vector3 position)
 		{
+			if (room == null) throw new ArgumentNullException("room", "Tried to get the position of a non-existing EXILED.ApiObject.Room");
+
 			return room.Transform.InverseTransformPoint(position);
 		}
-		
+		/// <summary>
+		/// The <see cref="Vector3"/> of the relative rotation based on the the <paramref name="room"/>'s rotation, based on the <paramref name="position"/>
+		/// </summary>
+		/// <param name="room">The <see cref="Room"/> you want to get the rotation from</param>
+		/// <param name="rotation">The rotation you want to get the relative of</param>
+		/// <returns>The direction (euler angles), relative from the room's current rotation</returns>
 		public static Vector3 GetRelativeRotation(this Room room, Vector3 rotation)
 		{
+			if (room == null) throw new ArgumentNullException("room", "Tried to get the rotation of  a non-existing EXILED.ApiObject.Room");
+
 			return room.Transform.InverseTransformDirection(rotation);
 		}
-
-		public static void SpawnItem(this Room room, ItemType item, Vector3 position, Vector3 direction, int sight = 0, int barrel = 0, int other = 0)
+		// Lol, no. I'm not documenting this method.
+		/// <summary>
+		/// Spawns an item based on the room's center, when used with <see cref="GetRelativePosition(Room, Vector3)"/> you'll be able to spawn items in positions consistently.
+		/// </summary>
+		/// <param name="room"></param>
+		/// <param name="item"></param>
+		/// <param name="position"></param>
+		/// <param name="direction"></param>
+		/// <param name="sight"></param>
+		/// <param name="barrel"></param>
+		/// <param name="other"></param>
+		/// <returns>The newly created pickup</returns>
+		public static Pickup SpawnItem(this Room room, ItemType item, Vector3 position, Vector3 direction, int sight = 0, int barrel = 0, int other = 0)
 		{
-			if (room == null) throw new ArgumentNullException("position", "Tried to spawn an item with in a non-existing EXILED.ApiObject.Room");
+			if (room == null) throw new ArgumentNullException("room", "Tried to spawn an item with in a non-existing EXILED.ApiObject.Room");
 
+			#region Geometry and position conversions
 			Transform transform = room.Transform;
 			Vector3 relativeDirection = transform.TransformDirection(direction);
 			Quaternion relativeRotation = Quaternion.Euler(relativeDirection);
 			Vector3 relativePosition = transform.TransformPoint(position);
+			#endregion
 
-			Map.SpawnItem(item, float.PositiveInfinity, relativePosition, relativeRotation, sight, barrel, other);
-			
+			Pickup pickup = Map.SpawnItem(item, float.PositiveInfinity, relativePosition, relativeRotation, sight, barrel, other);
+
+			#region Debug/Verbose logging
+
 			if (SpawnerConfig.Configs.Debug)
 			{
 				ServerConsole.AddLog($"[ItemSpawner DEBUG] Spawned {item.ToString() } in {room.Name}" +
@@ -47,9 +78,16 @@ namespace ItemSpawner
 										 $"{Environment.NewLine}\t- Attachments: sight: {sight}, barrel: {barrel}, other: {other}" +
 										 $"{Environment.NewLine}\t- Spawned by:{Assembly.GetCallingAssembly().GetName().Name}");
 			}
-			else if (SpawnerConfig.Configs.Verbose) Log.Info("Spawned " + item.ToString() + " in: " + room.Name);
+			else if (SpawnerConfig.Configs.Verbose)
+			{
+				Log.Info("Spawned " + item.ToString() + " in: " + room.Name);
+			}
+
+			#endregion
+
+			return pickup;
 		}
-		#region Old ItemSpawner stuff
+		#region Old ItemManager stuff
 		/* 
 		 * To be implemented when custom items are a thing again
 		public static void TrySpawnCustomItem(Room room, dynamic identifier, Vector3 position, Quaternion rotation = default)
@@ -69,25 +107,18 @@ namespace ItemSpawner
 		#endregion
 		private class DistinctRoomComparer : IEqualityComparer<Room>
 		{
-			public bool Equals(Room x, Room y)
-			{
-				return x.Name == y.Name;
-			}
-			public int GetHashCode(Room obj)
-			{
-				return obj.Name.GetHashCode();
-			}
+			public bool Equals(Room x, Room y) => x.Name == y.Name;
+			public int GetHashCode(Room obj) => obj.Name.GetHashCode();
 		}
-		internal static void OnWaitingForPlayers()
-		{
-			/**
-			 * You have multicore/multithread support? Nice, the secondary GC thread will take
-			 * care of this. You don't? Then LOL, because this is wasting precious CPU cycles.
-			 * Say goodbye to your nanoseconds.
-			 * (This just "cleans" the old list by making a new one. The other gets deleted.)
-			 * */
-
-			DistinctRooms = new List<Room>(Map.Rooms.Distinct(new DistinctRoomComparer()));
-		}
+		/**
+		 * You have multicore/multithread support? Nice, the secondary GC thread will take
+		 * care of this. You don't? Then LOL, because this is wasting precious CPU cycles.
+		 * Say goodbye to your nanoseconds.
+		 * (This just "cleans" the old list by making a new one. The other gets deleted.)
+		 * 
+		 * Useful to not spawn stuff repeatedly
+		 */
+		internal static void OnWaitingForPlayers() =>
+			distinctRooms = new List<Room>(Map.Rooms.Distinct(new DistinctRoomComparer()));
 	}
 }

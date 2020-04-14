@@ -13,30 +13,15 @@ namespace ItemSpawner
 
 		public override void OnDisable()
 		{
-			Log.Info("Thank god you disabled me. Your CPU will surely thank you tbh");
+			Events.WaitingForPlayersEvent += Spawner.OnWaitingForPlayers;
 		}
 
 		public override void OnEnable()
 		{
-			Log.Info("Stuff spawner enabled.");
+			Events.WaitingForPlayersEvent += Spawner.OnWaitingForPlayers;
 		}
 
 		public string[] allowedranks = new string[] { "owner", "admin" };
-
-		public bool enable = true;
-
-		public bool verbose = true;
-
-		public bool useGlobalItems = true;
-		/* for reference
-		public void Register()
-		{
-			instance = this;
-			AddEventHandlers(new ItemsFileManager(this), Priority.Low);
-			AddEventHandlers(new ItemSpawnerCommand(this), Priority.Low);
-			Spawner.Init(this);
-			AddCommands(new string[] { "itemspawner", "is", "items", "its" }, new ItemSpawnerCommand(this));
-		}*/
 
 		public override void OnReload()
 		{

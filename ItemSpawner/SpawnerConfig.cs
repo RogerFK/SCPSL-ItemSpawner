@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
-using System.Security.Permissions;
 using System.Text;
+
 using EXILED;
 
 namespace ItemSpawner
@@ -17,9 +17,8 @@ namespace ItemSpawner
 		/// </summary>
 		public static SpawnerConfig Configs
 		{
-			// Based on the Singleton pattern. Based on the Thread-Safe version.
+			// Based on the Singleton pattern (the Thread-Safe version).
 			// https://refactoring.guru/design-patterns/singleton/csharp/example
-			// The lock
 			get
 			{
 				if (_instance == null)
@@ -45,7 +44,7 @@ namespace ItemSpawner
 			get => _verbose;
 			set
 			{
-				var callingAssembly = Assembly.GetCallingAssembly();
+				Assembly callingAssembly = Assembly.GetCallingAssembly();
 				if (callingAssembly == Assembly.GetExecutingAssembly())
 				{
 					if (value) Log.Info($"{callingAssembly.GetName().Name} enabled the Verbose variable for ItemSpawner. Hello!");
@@ -68,13 +67,15 @@ namespace ItemSpawner
 				_debug = value;
 			}
 		}
-
+		/// <summary>
+		/// Defines if the current room should be the player's feet (useful when "in the next room")
+		/// </summary>
 		public bool FromFeet
 		{
 			get => _fromFeet;
 			set
 			{
-				var callingAssembly = Assembly.GetCallingAssembly();
+				Assembly callingAssembly = Assembly.GetCallingAssembly();
 				if (callingAssembly == Assembly.GetExecutingAssembly())
 				{
 					if (value) Log.Info($"{Assembly.GetCallingAssembly().GetName().Name} enabled the FromFeet variable for ItemSpawner. Hello!");
@@ -91,10 +92,7 @@ namespace ItemSpawner
 		/// <summary>
 		/// Update the configs on the <see cref="SpawnerConfig"/> singleton
 		/// </summary>
-		public static void RefreshConfigs()
-		{
-			Configs.UpdateConfigs();
-		}
+		public static void RefreshConfigs() => Configs.UpdateConfigs();
 		/// <summary>
 		/// Update the configs on the current <see cref="SpawnerConfig"/> instance
 		/// </summary>
