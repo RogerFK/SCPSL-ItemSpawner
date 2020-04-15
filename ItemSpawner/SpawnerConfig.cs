@@ -34,7 +34,7 @@ namespace ItemSpawner
 				return _instance;
 			}
 		}
-		private bool _debug, _verbose, _fromFeet;
+		private bool _debug, _verbose, _fromFeet, _disabled;
 
 		/// <summary>
 		/// Defines if ItemSpawner should print basic stuff to the console.
@@ -53,7 +53,31 @@ namespace ItemSpawner
 				_verbose = value;
 			}
 		}
-
+		/// <summary>
+		/// Defines if ItemSpawner itself is disabled. Won't affect the API.
+		/// </summary>
+		public bool Disabled
+		{
+			get => _disabled;
+			set
+			{
+				if (value) Log.Info($"{Assembly.GetCallingAssembly().GetName().Name} enabled ItemSpawner.");
+				else Log.Info($"{Assembly.GetCallingAssembly().GetName().Name} disabled ItemSpawner.");
+				_debug = value;
+			}
+		}
+		internal void DisableAsUser(string name, bool disable)
+		{
+			var cheater = Assembly.GetCallingAssembly();
+			if (cheater != Assembly.GetExecutingAssembly())
+			{
+				Log.Warn(cheater.GetName().Name + " tried to disable the plugin as user: " + name);
+				throw new Exception("Don't cheat! Use the SpawnerConfig.Configs.Disabled");
+			}
+			
+			Log.Info(name + $" {(disable ? "disabled" : "enabled")} ItemSpawner");
+			_disabled = disable;
+		}
 		/// <summary>
 		/// Defines if ItemSpawner should print debug lines. Useful to debug other plugins.
 		/// </summary>
