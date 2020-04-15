@@ -16,7 +16,9 @@ namespace ItemSpawner
 	/// </summary>
 	public static class Spawner
 	{
-
+		/// <summary>
+		/// The list of Distinct Rooms that ItemSpawner will use
+		/// </summary>
 		public static List<Room> distinctRooms = null;
 
 		/// <summary>
@@ -27,7 +29,7 @@ namespace ItemSpawner
 		/// <returns>The <see cref="Vector3"/> from the center of the room</returns>
 		public static Vector3 GetRelativePosition(this Room room, Vector3 position)
 		{
-			if (room == null) throw new ArgumentNullException("room", "Tried to get the position of a non-existing EXILED.ApiObject.Room");
+			if (room == null) throw new ArgumentNullException("room", "Tried to get the position of a non-existing \"EXILED.ApiObject.Room\"");
 
 			return room.Transform.InverseTransformPoint(position);
 		}
@@ -39,7 +41,7 @@ namespace ItemSpawner
 		/// <returns>The direction (euler angles), relative from the room's current rotation</returns>
 		public static Vector3 GetRelativeRotation(this Room room, Vector3 rotation)
 		{
-			if (room == null) throw new ArgumentNullException("room", "Tried to get the rotation of  a non-existing EXILED.ApiObject.Room");
+			if (room == null) throw new ArgumentNullException("room", "Tried to get the rotation of a non-existing \"EXILED.ApiObject.Room\"");
 
 			return room.Transform.InverseTransformDirection(rotation);
 		}
@@ -47,15 +49,15 @@ namespace ItemSpawner
 		/// <summary>
 		/// Spawns an item based on the room's center, when used with <see cref="GetRelativePosition(Room, Vector3)"/> you'll be able to spawn items in positions consistently.
 		/// </summary>
-		/// <param name="room"></param>
-		/// <param name="item"></param>
-		/// <param name="position"></param>
-		/// <param name="direction"></param>
-		/// <param name="sight"></param>
-		/// <param name="barrel"></param>
-		/// <param name="other"></param>
-		/// <returns>The newly created pickup</returns>
-		public static Pickup SpawnItem(this Room room, ItemType item, Vector3 position, Vector3 direction, int sight = 0, int barrel = 0, int other = 0)
+		/// <param name="item">The type of the item to be spawned</param>
+		/// <param name="durability">The durability (or ammo, depends on the weapon) of the item</param>
+		/// <param name="position">Where the item will be spawned</param>
+		/// <param name="direction">The direction. We recommend you to use <see cref="Quaternion.Euler(float, float, float)"/></param>
+		/// <param name="sight">The sight the weapon will have (0 is nothing, 1 is the first sight available in the weapon manager, and so on)</param>
+		/// <param name="barrel">The barrel of the weapon (0 is no custom barrel, 1 is the first barrel available, and so on)</param>
+		/// <param name="other">Other attachments like flashlight, laser or ammo counter</param>
+		/// <returns>The <see cref="Pickup"/></returns>
+		public static Pickup SpawnItem(this Room room, ItemType item, float durability, Vector3 position, Vector3 direction, int sight = 0, int barrel = 0, int other = 0)
 		{
 			if (room == null) throw new ArgumentNullException("room", "Tried to spawn an item with in a non-existing EXILED.ApiObject.Room");
 
@@ -66,7 +68,7 @@ namespace ItemSpawner
 			Vector3 relativePosition = transform.TransformPoint(position);
 			#endregion
 
-			Pickup pickup = Map.SpawnItem(item, float.PositiveInfinity, relativePosition, relativeRotation, sight, barrel, other);
+			Pickup pickup = Map.SpawnItem(item, durability, relativePosition, relativeRotation, sight, barrel, other);
 
 			#region Debug/Verbose logging
 
@@ -116,7 +118,7 @@ namespace ItemSpawner
 		 * Say goodbye to your nanoseconds.
 		 * (This just "cleans" the old list by making a new one. The other gets deleted.)
 		 * 
-		 * Useful to not spawn stuff repeatedly
+		 * Useful to not spawn stuff repeatedly.
 		 */
 		internal static void OnWaitingForPlayers() =>
 			distinctRooms = new List<Room>(Map.Rooms.Distinct(new DistinctRoomComparer()));
